@@ -1,0 +1,3 @@
+While the Unix build process theoretically can work on Windows
+(with Cygwin, MinGW, etc), it is probably better to use the
+"winbuild.bat" script in the root of the SubC archive.

@@ -1,0 +1,110 @@
+#!/bin/sh
+
+os=`uname`
+mac=`uname -m`
+opt=""
+as=""
+stat=""
+
+usage() {
+	sed -e 's/^.//' <<EOT
+	Usage: $0 [-h] [-m cpu] [-s os]
+EOT
+}
+
+longusage() {
+	echo
+	usage
+	echo
+	sed -e 's/^.//' <<EOT
+	-m cpu   select target machine
+	-s os    select target operating system
+
+EOT
+}
+
+while [ "x$1" != "x" ]; do
+	case $1 in
+	-h)	longusage; exit ;;
+	-m)	shift
+		if [ "x$1" = "x" ]; then usage; exit; fi
+		mac=$1
+		;;
+	-s)	shift
+		if [ "x$1" = "x" ]; then usage; exit; fi
+		os=$1
+		;;
+	*)	usage; exit ;;
+	esac
+	shift
+done
+
+if test -f src/scc0; then
+	echo "You may want to run 'make clean' first."
+	exit 1
+fi
+
+case $os/$mac in
+FreeBSD/i386)		os=freebsd ; mac=386    ; int=32 ;;
+FreeBSD/arm)		os=freebsd ; mac=armv6	; int=32 ;;
+FreeBSD/amd64)		os=freebsd ; mac=x86-64 ; int=64 ;;
+NetBSD/amd64)		os=netbsd  ; mac=x86-64 ; int=64 ;;
+OpenBSD/i386)		os=openbsd ; mac=386    ; int=32 ;;
+Linux/i386)		os=linux   ; mac=386    ; int=32 ;;
+Linux/i686)		os=linux   ; mac=386    ; int=32 ;;
+Linux/x86_64)		os=linux   ; mac=x86-64 ; int=64 ;;
+MINGW32_NT-6.1/i686)	os=windows ; mac=386    ; int=32 ;;
+MINGW32_NT-5.1/i686)	os=windows ; mac=386    ; int=32 ;;
+Darwin/x86_64)		os=darwin  ; mac=x86-64 ; int=64 ; stat=untested
+			opt="-darwin"
+			;;
+DOS/8086)		os=dos     ; mac=8086   ; int=16 ; stat=EXPERIMENTAL
+			as=s86
+			ar="sar -c"
+			ranlib="sar -r"
+			;;
+*)			echo "Sorry, $os/$mac is currently not supported."
+			exit 1
+			;;
+esac
+
+if [ "$stat" != "" ]; then
+	echo
+	echo "WARNING: this port is "$stat"!"
+	echo
+fi
+
+if [ -f "src/targets/$os-$mac/NOTE" ]; then
+	if [ "$stat" = "" ]; then echo; fi
+	echo NOTE:
+	cat src/targets/$os-$mac/NOTE
+	echo
+fi
+
+if [ $os = dos ]; then
+	(cd src; ln -fs ../targets/lib/init-unix.c lib/init.c)
+	(cd src; ln -fs ../targets/lib/system-dos.c lib/system.c)
+	if [ "$as" != "" ]; then
+		if [ ! -f src/Makefile.ORIG ]; then
+			cp src/Makefile src/Makefile.ORIG
+		fi
+		sed	-e "s/^AS=.*/AS=	$as/" \
+			-e "s/^AR=.*/AR=	$ar/" \
+			-e "s/^RANLIB=.*/RANLIB=	$ranlib/" \
+			<src/Makefile.ORIG >src/Makefile
+	fi
+elif [ $os = windows ]; then
+	(cd src; ln -fs ../targets/lib/init-windows.c lib/init.c)
+	(cd src; ln -fs ../targets/lib/system-windows.c lib/system.c)
+else
+	(cd src; ln -fs ../targets/lib/init-unix.c lib/init.c)
+	(cd src; ln -fs ../targets/lib/system-unix.c lib/system.c)
+fi
+
+(cd src && ln -fs targets/cg/cg$mac$opt.c cg.c)
+(cd src && ln -fs targets/cg/cg$mac.h cg.h)
+(cd src && ln -fs targets/$os-$mac/sys-$os-$mac.h sys.h)
+(cd src/lib && ln -fs ../targets/$os-$mac/crt0-$os-$mac.s crt0.s)
+(cd src/include && ln -fs ../targets/include/limits-$int.h limits.h)
+
+echo "Building for $os/$mac. Now cd to src and run make."

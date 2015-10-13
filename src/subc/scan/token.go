@@ -1,0 +1,273 @@
+package scan
+
+import "fmt"
+
+// Position stores the position of a token with respect to the source file.
+type Position struct {
+	Name   string
+	Offset int
+	Line   int
+	Column int
+}
+
+// Span stores the beginning and end position boundary of a token or block.
+type Span struct {
+	Start Position
+	End   Position
+}
+
+func (s Span) IsValid() bool { return s != NoSpan }
+
+var (
+	NoSpan = Span{}     // A zero value for span, considered to be invalid span.
+	NoPos  = Position{} // A zero value for position, considered to be an invalid position.
+)
+
+func (p Position) String() string {
+	name := p.Name
+	if name == "" {
+		name = "-"
+	}
+	return fmt.Sprintf("%v:%v:%v", name, p.Line, p.Column)
+}
+
+func (p Position) IsValid() bool { return p != NoPos }
+
+type Token struct {
+	Type Type
+	Pos  Position
+	Text string
+}
+
+func (i Token) Span() Span {
+	start, end := i.Pos, i.Pos
+	end.Offset += len(i.Text)
+	end.Column += len(i.Text)
+	return Span{start, end}
+}
+
+func (i Token) String() string {
+	switch {
+	case i.Type == EOF:
+		return fmt.Sprintf("%v: EOF", i.Pos)
+	case i.Type == Error:
+		return fmt.Sprintf("%v: error: %v", i.Pos, i.Text)
+	case len(i.Text) > 20:
+		return fmt.Sprintf("%v: %.20q...", i.Pos, i.Text)
+	}
+	return fmt.Sprintf("%v: %q", i.Pos, i.Text)
+}
+
+// Type is a token type.
+type Type int
+
+// All of the token types.
+const (
+	EOF Type = iota
+	Error
+	Comment
+	Preprocessor
+
+	Div
+	Mul
+	Mod
+	Plus
+	Minus
+	Lsh
+	Rsh
+	Gt
+	Geq
+	Lt
+	Leq
+	Eq
+	Neq
+	And
+	Xor
+	Or
+	Land
+	Lor
+
+	Arrow
+	AndEq
+	XorEq
+	LshEq
+	MinusEq
+	ModEq
+	OrEq
+	PlusEq
+	RshEq
+	DivEq
+	MulEq
+	Assign
+	Auto
+	Break
+	Case
+	Char
+	Colon
+	Comma
+	Continue
+	Dec
+	Default
+	Do
+	Dot
+	Ellipsis
+	Else
+	Enum
+	Extern
+	For
+	Goto
+	Ident
+	If
+	Inc
+	Int
+	Lbrace
+	Lbrack
+	Lparen
+	Not
+	Qmark
+	Rbrace
+	Rbrack
+	Register
+	Return
+	Rparen
+	Semi
+	Sizeof
+	Static
+	Struct
+	Switch
+	Negate
+	Union
+	Void
+	Volatile
+	While
+
+	Number
+	Rune
+	String
+)
+
+var types = [...]string{
+	EOF:          "EOF",
+	Error:        "error",
+	Comment:      "comment",
+	Preprocessor: "preprocessor",
+
+	Div:   "/",
+	Mul:   "*",
+	Mod:   "%",
+	Plus:  "+",
+	Minus: "-",
+	Lsh:   "<<",
+	Rsh:   ">>",
+	Gt:    ">",
+	Geq:   "<=",
+	Lt:    "<",
+	Leq:   "<=",
+	Eq:    "==",
+	Neq:   "!=",
+	And:   "&",
+	Xor:   "^",
+	Or:    "|",
+	Land:  "&&",
+	Lor:   "||",
+
+	Arrow:    "<-",
+	AndEq:    "&=",
+	XorEq:    "^=",
+	LshEq:    "<<=",
+	MinusEq:  "-=",
+	ModEq:    "%=",
+	OrEq:     "|=",
+	PlusEq:   "+=",
+	RshEq:    ">>=",
+	DivEq:    "/=",
+	MulEq:    "*=",
+	Assign:   "=",
+	Auto:     "auto",
+	Break:    "break",
+	Case:     "case",
+	Char:     "char",
+	Colon:    ":",
+	Comma:    ",",
+	Continue: "continue",
+	Dec:      "--",
+	Default:  "default",
+	Do:       "do",
+	Dot:      ".",
+	Ellipsis: "...",
+	Else:     "else",
+	Enum:     "enum",
+	Extern:   "extern",
+	For:      "for",
+	Goto:     "goto",
+	Ident:    "ident",
+	If:       "if",
+	Inc:      "++",
+	Int:      "int",
+	Lbrace:   "{",
+	Lbrack:   "[",
+	Lparen:   "(",
+	Not:      "!",
+	Qmark:    "?",
+	Rbrace:   "}",
+	Rbrack:   "]",
+	Register: "register",
+	Return:   "return",
+	Rparen:   ")",
+	Semi:     ";",
+	Sizeof:   "sizeof",
+	Static:   "static",
+	Struct:   "struct",
+	Switch:   "switch",
+	Negate:   "~",
+	Union:    "union",
+	Void:     "void",
+	Volatile: "volatile",
+	While:    "while",
+
+	Rune:   "rune",
+	Number: "number",
+	String: "string",
+}
+
+func (t Type) String() string {
+	if 0 <= int(t) && int(t) < len(types) {
+		return types[t]
+	}
+	return fmt.Sprintf("Token(%d)", t)
+}
+
+// Precedence returns the operator precedence of a given operator.
+// The operators covered are not the full set, because some of them need
+// more context like whether or not it is prefix/postfix/unary,
+// If op is not an arithmetic or logical operator, it returns the lowest precedence.
+func (op Token) Precedence() int {
+	switch op.Type {
+	case Div, Mul, Mod:
+		return 10
+	case Plus, Minus:
+		return 9
+	case Lsh, Rsh:
+		return 8
+	case Gt, Geq, Lt, Leq:
+		return 7
+	case Eq, Neq:
+		return 6
+	case And:
+		return 5
+	case Xor:
+		return 4
+	case Or:
+		return 3
+	case Land:
+		return 2
+	case Lor:
+		return 1
+	}
+	return 0
+}
+
+// IsLiteral returns whether or not an op was a literal
+func (op Token) IsLiteral() bool {
+	return op.Type == Rune || op.Type == Number || op.Type == String
+}

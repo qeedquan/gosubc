@@ -1,0 +1,8 @@
+The signal() function of this port may cause handlers to segfault.
+In this case, you can either
+- uncomment the alternative signal() function in
+  src/targets/linux-x86-64/crt0-linux-x86-64.s
+  and set SYSLIBC to "/usr/lib/libc.a" in
+  src/targets/linux-x86-64/sys-linux-x86-64.h
+  (resulting in massively bloated executables)
+- or, just not use signal() in your code, if that's an option.

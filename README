@@ -1,0 +1,36 @@
+SubC is a simple subset of C originally written by 
+Nils Holms (http://www.t3x.org/) for teaching newcomers 
+how to write a compiler.
+
+This is a reimplementation of SubC based on Nils compiler 
+(subc-20150218.tgz) and the Go standard packages in Go. 
+The code generation is based on the SubC compiler 
+while the lexer, parser, and type checker is based on the Go 
+standard library packages. The code emitted by this compiler
+should match exactly with what SubC generates.
+
+The linux amd64/i386 code generator has been tested, but the Makefile
+only supports linux amd64 right now.
+
+The darwinamd64 and arm6 has not been tested and was just implemented by a transliteration.
+
+There are some minor differences in this implementation of SubC and
+the official one. The differences are listed below:
+
+* __FILE__ and __LINE__ are supported
+
+* __TIME__ and __DATE__ are predefined in the preprocessor
+
+* // comments accepted
+
+* goto is supported, labels can be declared after local variable declarations.
+
+* function parameters can have no names, ie, void f(int, int a, int, char x)
+
+* more lenient on assignments; we can assign integers to pointers after
+local declarations and integer types can be assigned by pointer types.
+
+The bugs/ directory has all the known bugs.
+The subc/ dir contains the original subc code for bootstrapping
+The src/ dir contains the Go source code of the compiler
+The test/ dir is for test code to make sure that we generate exact same code as subc

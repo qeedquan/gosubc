@@ -1,0 +1,12 @@
+
+	? printf() and unsigned representation of octal and hex numbers
+
+	- Rewrite crt0 module to remove GLIBC system call layer:
+		OpenBSD-386
+		Darwin-x86-64
+	  (Can't do this, don't know enough about these systems.)
+
+	- fgetpos()/fsetpos() should support longer seek.
+
+	? clean up sym.c
+

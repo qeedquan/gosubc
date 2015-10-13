@@ -1,0 +1,16 @@
+lib/crt0.o
+cg.o
+decl.o
+dosmain.o
+error.o
+expr.o
+gen.o
+misc.o
+opt.o
+prep.o
+scan.o
+stmt.o
+sym.o
+tree.o
+ulibc.o
+lib/libscc.a

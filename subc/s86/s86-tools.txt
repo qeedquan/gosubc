@@ -1,0 +1,477 @@
+
+
+	*** S86 - A SIMPLE ASSEMBLER FOR AN 8086 SUBSET ***
+
+
+	SYNOPSIS
+
+	S86 is a simple assembler for most of the 8086 instructions.
+	It accepts a syntax that is basically the same as those of
+	popular assemblers of the DOS days, like the T*rbo Assembler
+	or the M*crosoft Assembler. It emits object files in SLD
+	(Small Loader) format. SLD is required to transform these
+	files into executable (EXE) format.
+
+
+	USAGE
+
+	s86 [-dv] [-o file] file ...
+
+	-v
+	Verbose operation.
+
+	-d
+	Debug. Generates *lots* of output.
+
+	-o file
+	Write output to the given file.
+
+	Each given file is assembled and the output is written to the
+	given file with its suffix (typically ".s") replaced by ".o",
+	e.g.: "s86 test.s" will generate a file named "test.o" unless
+	a different name is specified with "-o".
+
+	An input file name of "-" denotes standard input. Output goes
+	to "-.o" in this case, which is unfortunate.
+
+
+	INSTRUCTION FORMAT
+
+	The general instruction format is
+
+	LABEL:  INSTRUCTION    OPERAND1,OPERAND2  ; COMMENT
+
+	where every part except for the instruction is optional. The
+	following 8086 instructions are recognized by S86:
+
+	aam aas adc add and call cbw clc cld cli cmc cmp cmpsb cmpsw
+	cwd daa das dec div hlt idiv imul int into iret ja jae jnc
+	jc jb jbe jcxz je jz jg jge jl jle jmp jmps jne jnz jno jnp
+	jns jo jp js lahf lea lock lodsb lodsw loop loopz loopnz mov
+	movsb movsw mul neg nop not or pop popf push pushf rcl rcr
+	rep repz repnz ret rol ror sahf sar sbb scasb scasw shl sal
+	shr stc std sti stosb stosw sub test wait xchg xlat xor
+
+	"jmps" can also be written as "jmp short". 
+
+	The load and arithmetic instruction may use the usual
+	prefixes to access byte- and word-sized objects, e.g.:
+
+	mov     byte ptr [bx],0  ; store 0 in byte pointed to by BX
+	mov     word ptr [bx],0  ; store 0 in word pointed to by BX
+
+	The "offset" keyword can be used to refer to the address instead
+	of the value of an object:
+
+	mov	ax,offset X	; load the address of X into AX
+
+	The special data object DGROUP refers to the beginning of the
+	data segment at run time, so each program should set up the
+	data segment using the following code:
+
+	mov	ax,DGROUP	; address of data segment
+	mov	ds,ax
+
+	The "call near" syntax is also supported, but has no meaning
+	as S86 can only generate small-model object files.
+
+	Segment prefixes can be added in the usual way, e.g.:
+
+	mov     ax,es:[bx]  ; fetch word from ES segment
+
+	Prefixes like rep and repnz must be placed in a separate line.
+
+	The movs and stos instructions can only operate on their
+	default segments.
+
+	Numerical values default to decimal. Hexa-decimal values
+	require a trailing 'h' character, e.g: 7fh. When a
+	hexa-decimal begins with a non-decimal digit, a leading
+	0 must be added, e.g.: 0ffh.
+
+
+	ADDRESSING MODES
+
+	The following addressing modes are recognized by S86 in
+	addition to register and memory addressing:
+
+	[si] [di] [bx] [bp] [bx+si] [bx+di] [bp+si] [bp+di]
+	[bp+N] [bx+N] [si+N] [di+N]
+
+
+	PSEUDO INSTRUCTIONS
+
+	.code
+	Selects the code segment for output.
+
+	.data
+	Selects the data segment for output.
+
+	.stack N
+	Sets the stack size to N bytes.
+
+	public name [, ...]
+	Declares the given names as public symbols.
+
+	extrn name [, ...]
+	Declares the given names as external symbols.
+
+	name equ value
+	Defines "name" as an alias for the given value.
+
+	label: db value [, ...]
+	label: dw value [, ...]
+	Emits the given values directly to the current target segment.
+	In the data segment, the colon after the label can be omitted.
+
+	Values in DB and DW pseudo instructions may be numerical values
+	or strings (contained in " characters).
+
+	The special forms
+
+	db value dup count
+	dw value dup count
+
+	emit the given value repeatedly (count times). In this case,
+	the value must be numeric.
+
+	.model string
+	quirks
+	end
+	These are recognized but silently ignored.
+
+
+	*** SLD - A SIMPLE LOADER ***
+
+
+	SYNOPSIS
+
+	SLD is a small and simple loader for linking SLD object files.
+	It generates DOS EXE-style executable programs.
+
+
+	USAGE
+
+	sld [-dsv] [-o file] [-L dir] [-f file] file ... [-llib]
+
+	-v
+	Verbose operation.
+
+	-d
+	Debug. Expect *lots* of output.
+
+	-s
+	Strip the resulting executable file (remove symbol table).
+
+	-f file
+	Fetch object file name from the given list file instead of the
+	command line.
+
+	-o file
+	Write the executable output to the given file. The default
+	output file is "a_out.exe".
+
+	-L dir
+	Search libraries (specified with -l) in the given directory.
+	The library path defaults to ".".
+
+	-llib
+	This is a short form of libdir/libLIB.a, where "libdir" is the
+	library path as specified in -L and "LIB"is the "lib" part in
+	"-llib", e.g.: "-L /foo/bar -lbaz" will attempt to load the
+	library file "/foo/bar/libbaz.a".
+
+
+	*** THE SLD OBJECT FILE FORMAT ***
+
+
+	FILE FORMAT
+
+	+-------------------------------+
+	| OBJHDR Header                 |
+	+-------------------------------+
+	| PUBSYM Public Symbol Table    |
+	+-------------------------------+
+	| EXTSYM External Symbol Table  |
+	+-------------------------------+
+	| DOSREL DOS Relocation Table   |
+	+-------------------------------+
+	| RELOC  Relocation Table       |
+	+-------------------------------+
+	| CODE   Program Code           |
+	+-------------------------------+
+	| DATA   Program Data           |
+	+-------------------------------+
+
+
+	HEADER FORMAT (OBJHDR)
+
+	All values are little-endian 16-bit values.
+
+	+-----------------------------------+
+	| 00 | OMAGIC  Magic Number (4F,00) |
+	+-----------------------------------+
+	| 02 | OPUBP   Position of PUBSYM   |
+	+-----------------------------------+
+	| 04 | OEXTP   Position of EXTSYM   |
+	+-----------------------------------+
+	| 06 | ODOSREL Position of DOSREL   |
+	+-----------------------------------+
+	| 08 | ORELOC  Position of RELOC    |
+	+-----------------------------------+
+	| 0A | OCODE   Position of CODE     |
+	+-----------------------------------+
+	| 0C | ODATA   Position of DATA     |
+	+-----------------------------------+
+	| 0E | ODATASZ Length of DATA       |
+	+-----------------------------------+
+	  10   SIZE
+
+
+	SYMBOL TABLE FORMAT (PUBSYM, EXTSYM)
+
+	All values are little-endian 16-bit values.
+
+	+-------------------------------------------------------------+
+	| 00 | SNAME  Symbol Name, max 14 chars, NUL-padded           |
+	+-------------------------------------------------------------+
+	| 0F | SSEGMT Segment, X=none, C=code, D=data                 |
+	+-------------------------------------------------------------+
+	| 10 | SCLASS Class, P=public, E=extern, L=local, U=undefined |
+	+-------------------------------------------------------------+
+	| 11 | SADDR  Address                                         |
+	+-------------------------------------------------------------+
+	| 13 | SLLIST Link List, internal pointer to mark table       |
+	+-------------------------------------------------------------+
+	| 15 |        Mark Table (only if Class=Extern)               |
+	+-------------------------------------------------------------+
+	       Size depends on number of mark table entries
+
+	
+	MARK TABLE FORMAT
+
+	+---------------------------------------------+
+	| 00 | MKFLAG Mark Flags: 1=SHORT, 2=RELATIVE |
+	+---------------------------------------------+
+	| 02 | MKADDR Mark Address                    |
+	+---------------------------------------------+
+	| 04 | MKPTR  Mark Pointer (used internally)  |
+	+---------------------------------------------+
+	  06   SIZE
+
+	A MKPTR value of FFFF indicates the end of the mark table.
+	An entry containing MKPTR=FFFF is not a valid mark.
+
+
+	DOS RELOCATION ENTRY FORMAT (DOSREL)
+
+	+----------------------------------------+
+	| 00 | Offset part of relocation address |
+	+----------------------------------------+
+	  02   SIZE
+
+	There is only one code segment.
+
+
+	RELOCATION ENTRY FORMAT (RELOC)
+	
+	+----------------------------+
+	| 00 | Class: C=Code, D=Data |
+	+----------------------------+
+	| 01 | Relocation Address    |
+	+----------------------------+
+	  03   SIZE
+
+
+	BINARY DUMP FORMAT (CODE, DATA)
+
+	The CODE and DATA parts are images of the corresponding
+	program segments. RELOC addresses are offsets into the
+	CODE and DATA images. DOS relocation entries are offsets
+	into the CODE image.
+
+
+	*** SAR ARCHIVE FILE FORMAT ***
+
+
+	ARCHIVE ENTRY FORNAT
+
+	+--------------------------------------------+
+	| 00 | AR_MAGIC Archive magic number (45,52) |
+	+--------------------------------------------+
+	| 02 | AR_NAME  Member name, up to 12 chars* |
+	+--------------------------------------------+
+	| 0E | AR_SIZE  Length of member in bytes    |
+	+--------------------------------------------+
+	| 10 |          Padded with NUL              |
+	+--------------------------------------------+
+	| 20 |          Data ...                     |
+	+--------------------------------------------+
+
+	* NUL-padded, if less than 12 characters.
+
+	All archive entries are padded with zeros to a length that
+	is a multiple of 16 bytes.
+
+
+	SYMDEF ENTRY FORMAT
+
+	The SYMDEF must be the first member of the archive and it must
+	be named "__SYMDEF.__". It contains the public symbol table
+	entries of all object files in the archive, but with the
+	SADDR field set to the block address of the corresponding
+	object file in the archive.
+
+	A block address is the offset of an object in the archive
+	shifted to the right by four bits, so the maximum size of an
+	indexable archive is 4*65536 = 256K bytes.
+
+
+	*** SAR - A SIMPLE ARCHIVER ***
+
+
+	SYNOPSIS
+
+	SAR is a small archive manager for SLD runtime libraries.
+
+
+	USAGE
+
+	sar -c [-v] archive file ...
+	sar -c [-v] -f listfile archive
+	sar -t [-v] archive
+	sar -x [-v] archive [ member ... ]
+	sar -r [-v] archive
+
+	-c
+	Create archive containing the given files.
+
+	-f
+	Read file names from listfile intead of the command line.
+
+	-t
+	Table of contents.
+
+	-x
+	Extract the given members. When no members are spcified,
+	extract all.
+
+	-r
+	Create a SYMDEF entry in the archive so that SLD can use the
+	archive as a runtime library.
+
+	-v
+	Verbose operation.
+
+	To create a library file for SLD, add the desired members to
+	an archive using -c and then index the archive using -r:
+
+	sar -c library.a object2.o object2.o ...
+	sar -r library.a
+
+
+	LIMITS
+
+	No member of an archive may be larger than 64K bytes, and the
+	entire archive may not be larger than 256K bytes.
+
+
+	*** SNM - PRINT SLD SYMBOL TABLES ***
+
+
+	SYNOPSIS
+
+	SNM prints SLD symbol tables contained in SLD object files,
+	DOS EXE files, or SAR archives.
+
+
+	USAGE
+
+	snm [-aemvv] file ...
+
+	-v -vv
+	Verbose operation.
+
+	-e
+	Print external symbols (default print public symbols).
+
+	-a
+	Print all (public and external) symbols.
+
+	-m
+	Print mark tables of external symbols.
+
+
+	*** XSTRIP - REMOVE SLD SYMBOL TABLES ***
+
+
+	SYNOPSIS
+
+	XSTRIP removes SLD symbol tables from DOS EXE-style program
+	files.
+
+
+	USAGE
+
+	xstrip [-fv] [-s symfile] file ...
+
+	-v
+	Verbose operation.
+
+	-f
+	Force. Strip data, even if it does not look like an SLD symbol
+	table.
+
+	-s file
+	Store symbol table in the given file after removing it from
+	the executable. Only one file name may be specified with this
+	option.
+
+
+	*** XHD - PRINT EXEC HEADER ***
+
+
+	SYNOPSIS
+
+	XHD prints the information contained in DOS EXE file headers.
+
+
+	USAGE
+
+	xhd file ...
+
+
+	EXE HEADER STRUCTURE
+
+	One 16-bit word per entry.
+
+	+-----------------------------------------------------------+
+	|      | Magic number (the infamous "MZ")                   |
+	+-----------------------------------------------------------+
+	| LAST | Number of bytes in last page                       |
+	+-----------------------------------------------------------+
+	| SIZE | Number of pages in image (512 bytes/page)          |
+	+-----------------------------------------------------------+
+	| NREL | Number of DOS relocation entries                   |
+	+-----------------------------------------------------------+
+	| HDSZ | Size of EXE header in bytes                        |
+	+-----------------------------------------------------------+
+	| MINI | Minimum allocation in paragraphs (16 bytes/para)   |
+	+-----------------------------------------------------------+
+	| MAXA | Maximum allocation (0xffff = unlimited)            |
+	+-----------------------------------------------------------+
+	| SSEG | Stack segment offset, size of static data          |
+	+-----------------------------------------------------------+
+	| STKP | Initial value of stack pointer                     |
+	+-----------------------------------------------------------+
+	| CSUM | Checksum, 0 means do not check                     |
+	+-----------------------------------------------------------+
+	| ENTR | IP part of initial entry point                     |
+	+-----------------------------------------------------------+
+	| CSEG | CS part of initial entry point                     |
+	+-----------------------------------------------------------+
+	| OREL | Offset of relocation table in header               |
+	+-----------------------------------------------------------+
+	| OVID | Overlay ID, 0 = not an overlay                     |
+	+-----------------------------------------------------------+
+

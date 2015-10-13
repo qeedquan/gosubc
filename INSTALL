@@ -1,0 +1,12 @@
+Currently, only linux amd64 is supported for building, but the code
+emitter has been tested on i386 too.
+
+You need a linux amd64 machine with go 1.5
+
+type "make" in the dir with the Makefile to build scc for linux-amd64.
+
+the subc directory/ contains the scc code from SubC distribution
+it contains the libs and compiler code we will compile using our compiler.
+
+It will build the scc, our compiler in the bin/ dir and sccb, a compiler
+that compiled itself, just for fun.

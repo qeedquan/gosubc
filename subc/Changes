@@ -1,0 +1,191 @@
+2015-02-18 Fix: Emitted wrong arguments to MULQ on x86 in struct* scaling.
+2015-02-02 Fix: Long init lists in array declarations could run out of nodes.
+2014-12-07 Fix: strncpy() should pad destination. Thanks, Alexey Frunze!
+2014-12-07 Fix: fseek() should return 0 on success. (also by Alexey)
+2014-12-07 Fix: longjmp() may not pass 0 to setjmp(). (also by Alexey)
+2014-12-07 Fixed byte shift code emitted for x86. Thanks, Teran McKinney!
+2014-06-22 Running extended triple test only in case of failure.
+2014-06-03 Fix: syntax errors in constexprs could crash the compiler.
+2014-05-25 Updated and re-organized documentation.
+2014-05-24 Added operation reordering (tree skewing), e.g.: a+b*c --> b*c+a.
+2014-05-24 Added strength reduction 2/2^N --> 2>>N.
+2014-05-24 Added strength reduction 2*2^N --> 2<<N.
+2014-05-20 Fix: convert '/' in all commands paths in Windows system().
+2014-05-19 Applied patch for fixing system() on Windows. Thanks, Jean-Marc!
+2014-05-18 Added OpenBSD ELF note.
+2014-05-18 Fix: missed some functions when adapting OpenBSD crt0 to R-L calls.
+2014-05-18 Applied more Windows patches by Jean-Marc Lienher. Thanks!
+2014-05-17 Updated documentation.
+2014-05-17 Changed random number test in libtest.c.
+2014-05-17 Made kprintf() convert '\n' on descriptors 1,2 on DOS.
+2014-05-16 Made some stdio functions emit CR,LF for '\n' on stdout/err on DOS.
+2014-05-14 Added triple test script to gather data in case of failure.
+2014-05-14 Added some DOS #ifdef:s to libtest.c (./file vs .\file).
+2014-05-14 Adapted printf test in libtest.c for 16-bit systems.
+2014-05-13 Fixed setjmp() function in DOS port (overwrote caller's memory).
+2014-05-12 Updated documentation.
+2014-05-10 Fix: added installation of (non-stdio) ncrt0.o to Makefile.
+2014-05-10 Applied a load of Windows patches by Jean-Marc Lienher. Thanks!
+2014-05-09 Fix: wrong Opt_sum_lim when BPW != sizeof(int).
+2014-05-09 Removed constant expr parser, using constant folding instead.
+2014-05-05 Increased NODEPOOLSZ.
+2014-05-05 Windows port builds, but programs crash; back to EXPERIMENTAL.
+2014-05-05 Changed winbuild.bat to print instructions, using make again.
+2014-05-04 Changed triple test to use assembly output instead of binaries.
+2014-05-04 Added -N (don't use stdio) flag and generation of ncrt0's.
+2014-05-03 Removed "make" from winbuild.bat script (probably still broken).
+2014-05-03 Fix: remove trailing '\r' in preprocessor lines.
+2014-05-03 Gave up writing a signal(3) function for NetBSD. Using libc for now.
+2014-05-03 Removed almost all libc dependencies from NetBSD-x86-64 crt0.
+2014-05-02 Removed libc dependencies from FreeBSD-x86-64 crt0.
+2014-05-01 Fixed order of argc/argv on DOS port (due to changed calling conv).
+2014-05-01 Marked all untested ports "untested".
+2014-05-01 Added removal of zero offsets from address computation.
+2014-04-30 Adapted all remaining ports to new calling convention.
+2014-04-29 Adapted NetBSD-x86-64 crt0 to new calling convention.
+2014-04-29 Adapted FreeBSD-x86-64 crt0, build failed, marked BROKEN.
+2014-04-28 Adapted FreeBSD-armv6 crt0 to new calling convention.
+2014-04-28 Adapted FreeBSD-386 crt0 to new calling convention.
+2014-04-28 Removed varargs redefinition hack (no longer needed).
+2014-04-28 Changed calling convention to standard C (right-to-left).
+2014-04-27 Added optimizer.
+2014-04-26 Added tree abstraction.
+2014-04-20 Forked this version.
+2014-04-07 Fixed XSTRIP and SNM programs on 16-bit systems.
+2014-04-05 Made s86 cache code for faster resolution of forward references.
+2014-04-05 Fix: missing file name in error messages due to refactoring.
+2014-04-03 Added DOS build script (targets/dos-8086/dosbuild.bat).
+2014-04-02 Clean-up and misc. small fixes.
+2014-04-01 The compiler can now be cross-compiled to DOS.
+2014-04-01 Updated codumentation.
+2014-04-01 Added DOS/EXE targets to Makefiles.
+2014-03-31 Made compiler controller a separate executable on DOS.
+2014-03-31 Factored out compiler controller.
+2014-03-29 Documented bootstrapping of the DOS version.
+2014-03-28 Added minimal runtime for compiling SCC86 on DOS.
+2014-03-28 Added system() function for DOS.
+2014-03-28 Added heap limit check to DOS _sbrk().
+2014-03-27 Fix: struct_type[x] generated wrong offset.
+2014-03-25 Turned __argc keyword into a local variable.
+2014-03-23 Fix: #error could be mistakenly executed in negative #ifdef.
+2014-03-22 Fix: fseek() could truncate files on DOS (zero-length _write()).
+2014-03-22 Fix: OpenBSD sys.h file had wrong name.
+2014-03-22 Changed default output file name for Windows.
+2014-03-21 Fix: sizeof(void) was not an error.
+2014-03-21 Made scc keep non-temporary object files.
+2014-03-21 Added ufseek() (unsigned fseek) function to S86.
+2014-03-20 Updated documentation.
+2014-03-19 Both S86 and SLD run on 16-bit systems now.
+2014-03-19 Made SLD store its relocation buffer on disk.
+2014-03-19 Updated build script for windows. (untested!)
+2014-03-18 Changed malloc() over-alloc. threshold for 16-bit systems.
+2014-03-18 Made SLD store its relocation table on disk.
+2014-03-17 Cleaned up the S86 tool chain, moved to s86/.
+2014-03-17 Added setjmp() and longjmp() to DOS crt0.
+2014-03-17 Made s86 write RELOC table to file to save memory.
+2014-03-16 Added volatile keyword (as no-op).
+2014-03-14 Misc. small fixes to libc (purely stylistic).
+2014-03-14 Made printf("%s",NULL); print (NULL) instead of crash.
+2014-03-14 Added missing CG prototypes.
+2014-03-13 Added arena check to realloc().
+2014-03-13 Added ad-hoc libc test suite. (tests/libtest.c)
+2014-03-13 Implemented proper (unsigned) pointer comparison. (all back-ends)
+2014-03-13 Fix: missing cmp queue commit in queue_cmp() (all back-ends).
+2014-03-11 Fix: _vformat() crashed on unknown % sequences.
+2014-03-11 Fix: limited octal escape sequences to three digits.
+2014-03-11 Fix: added code to handle void values in expressions.
+2014-03-11 Improved long usage (-d ?), misc cosmetical fixes.
+2014-03-09 Updated misc. docs.
+2014-03-06 Added code to fuse logic ops and conditional jumps (optimization).
+2014-02-26 Fixed code generator bug in armv6 back end.
+2014-02-26 Fixed alignment in galloc() for cross-compilation.
+2014-02-25 Added vprintf(), vfprintf(), and vsprintf() functions.
+2014-02-25 Added (slightly incompatible) varargs mechanism.
+2014-02-23 Fixed duplicate register use in 8086 CG.
+2014-02-21 Made s86 keep its code output on disk instead of in memory.
+2014-02-20 Moved switch tables to code segment.
+2014-02-19 Documented SLD (small loader) file formats.
+2014-02-18 Fixed DOSRELOC bug in SLD.
+2014-02-17 Successfully cross-compiled main(){printf("hi\n");} for DOS/8086.
+2014-02-17 Fixed wrong DUP argument in S86.
+2014-02-17 Fixed wrong return value in fread().
+2014-02-16 Updated docs, misc. cosmetic changes.
+2014-02-15 Added tests/sys.c program for testing crt0 functions.
+2014-02-15 Fixed %p in *printf functions (wrong result for values < 0).
+2014-02-14 Wrote simple crt0 test suite.
+2014-02-14 Added fcntl.h include file, added SEEK_* constants to unistd.h.
+2014-02-13 Removed system libc dependencies from freebsd-armv6 crt0.
+2014-02-12 Removed system libc dependencies from freebsd-386 crt0.
+2014-02-12 Re-organized targets/ directory, adapted configure script.
+2014-02-07 Added FreeBSD/armv6 crt0 (crt0-freebsd-armv6.s).
+2014-02-06 Added FreeBSD/armv6 back-end (cgarmv6.c).
+2014-02-05 Added alignment option to galloc() for CPUs with aligned access.
+2014-02-03 Fix: wait_bye should not be visible at C level in Darwin crt0.
+2014-02-03 Added version info (-V option).
+2014-02-02 Renamed cerror() due to libc conflict (FreeBSD 10.0-RC5). wtf?!
+2014-01-19 Updated configure script.
+2014-01-19 Removed old, stack-based back-end.
+2014-01-15 Fixed alignment of environ and __progname in x86-64 crt0's.
+2014-01-15 Added experimental support for Darwin/x86-64. Thanks, Romain LWPB!
+2014-01-15 Made CG emit ".comm" instead of ".lcomm/.globl" for globals.
+2014-01-14 Added OpenBSD/386 crt0 module (crt0-openbsd-386.s). Thanks, Romain!
+2014-01-05 Removed superfluous system libc from linux sys.h.
+2013-09-25 Fixed missing error messge in linker invocation.
+2013-08-29 Added BUILD.BAT script for Windows by Jean-Marc Lienher. Thanks!
+2013-05-24 Fixed a potential bug in the SYN/386 generator. Thanks, JM Lienher!
+2013-05-21 Cleaned up the Windows code a bit (purely stylistic).
+2013-05-18 Updated README, described Windows/MinGW port.
+2013-05-18 Added FreeBSD voodoo section to 386 port. Thanks, Bakul Shah!
+2013-05-17 Added Windows/386 support supplied by Jean-Marc Lienher. Thanks!
+2013-02-28 Fix: fread() returned wrong length for partially filled buffers.
+2013-02-27 Fix: setjmp()/longjmp() did not work properly.
+2013-02-26 Fix: struct x { int *a, *b; }; generated int **b.
+2013-02-21 Added a synthesizing back-end for the x86-64.
+2013-02-19 Fix: *p+=n and *p-=n with int *p yielded wrong result.
+2013-02-19 Fix: stdout was not line-buffered.
+2013-02-18 Made printf %p output unsigned.
+2013-02-18 Fixed wrong output of printf("%d", INT_MIN);
+2013-02-18 Finished new code-synthesizing back-end.
+2013-02-13 Added pointer arithmetics test suite.
+2013-02-03 Reversed this file.
+2013-02-03 Fixed some typos, updated book link in README.
+2012-12-03 Added the linux x86-64 crt0 module supplied by "minux". Thanks!
+2012-05-14 Made the compiler clean up *.o files after linking.
+2012-05-14 Added -vvv option (also lists remove commands).
+2012-05-14 Fix: reporting non-existent source files without .[sc] suffix.
+2012-05-07 Fix: middle argument of ?: is an expr (not a logic op).
+2012-04-27 Renamed syscall.h to unistd.h for portability.
+2012-04-26 Removed all GNU libc dependencies from Linux crt0.
+2012-04-25 Added the Linux/386 crt0 module (crt0-linux-386.s).
+2012-04-18 Added a configure script.
+2012-04-18 Moved machine word size to target description.
+2012-04-17 Added the FreeBSD/x86-64 crt0 module (crt0-freebsd-x86-64.s).
+2012-04-17 Improved some error messages.
+2012-04-16 Fixed an off-by-one error in getenv().
+2012-04-15 Re-organized archive to support multiple targets.
+2012-04-15 Experimental NetBSD/x86 support completed.
+2012-04-14 Added the NetBSD/x86-64 startup module (crt0-netbsd-x86-64.s).
+2012-04-13 Added the x86-64 code generator (cgx86-64.c).
+2012-04-12 Fixed increment/decrement of pointer to struct/union.
+2012-04-05 Made structs/unions invalid operands to arithmetic ops.
+2012-04-05 Added struct/union cast operators.
+2012-04-04 Added proper struct* arithmetics for + and -.
+2012-04-03 Added proper struct* arithmetics for ++ and --.
+2012-04-03 Added #error, #line, #pragma preprocessor commands.
+2012-04-03 Added the kprintf() function (fd-based printf()).
+2012-04-03 Fixed pointer arithmetics (struct/union**).
+2012-04-02 Made FILE a struct. (Breaking stdio library!)
+2012-04-02 Fixed declaration parser (accept fn returning struct/union).
+2012-04-01 Changed jmp_buf type from int[2] to struct _jmp_buf.
+2012-03-31 Added struct/union access semantics.
+2012-03-30 Added struct/union access syntax (x->y and x.y).
+2012-03-30 Added local static struct/union definition semantics.
+2012-03-29 Added local struct/union definition syntax and semantics.
+2012-03-29 Added global struct/union definition syntax and semantics.
+2012-03-28 Added struct/union symbol table support.
+2012-03-27 Added global struct/union declaration syntax.
+2012-03-26 Added static prototypes.
+2012-03-26 Added local extern identifiers.
+2012-03-26 Added local enum declarations.
+2012-03-26 Added auto and register keywords (no-ops).
+2012-03-26 Made "&array" valid syntax.

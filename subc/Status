@@ -1,0 +1,68 @@
+
+
+	SUBC BUILD STATUS
+
+
+	FreeBSD/386 8.2-RELEASE, gcc 4.2.1, SubC 20140525
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	works
+
+	FreeBSD/armv6 10.0-RC5, clang 3.3, SubC 20140525
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	works
+
+	FreeBSD/x86-64 10.1-RELEASE, clang 3.4.1, SubC 20141207
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	works
+
+	NetBSD/x86-64 6.1.4-RELEASE, gcc 4.5.3, SubC 20140525
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	core-dumps
+
+	Debian/x86-64 7.5, gcc 4.7.2, SubC 20140525
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	core-dumps
+
+	OpenBSD/386 5.5, gcc 4.2.1, SubC 20140525
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	works (using system libc)
+
+	VectorLinux/x86-64 7.0, gcc 4.5.2, SubC 20140512
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	core-dumps
+
+	DOSBox 0.74, cross-compiled with SubC, SubC 20140525
+		triple test	passed
+		ptest		passed
+		systest		passed (except unimplemented)
+		libtest		passed
+		signal()	n/a
+
+	Windows/386 7 SP1 64-bit, mingw32-gcc 4.8.1-4, SubC 20140519
+		triple test	passed (timestamp in binary?)
+		ptest		passed
+		systest		passed (except unimplemented)
+		libtest		passed
+		signal()	n/a
+

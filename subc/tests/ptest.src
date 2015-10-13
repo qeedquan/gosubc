@@ -1,0 +1,279 @@
+/*
+ * Ad-hoc C pointer arithmetics test suite
+ * Nils M Holm, 2013
+ * In the public domain
+ *
+ * To generate the actual test file, run:
+ *
+ *	awk -f ptest.awk <ptest.src >ptest.c
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#define N sizeof(void *)
+#define N2 (N*2)
+
+int	r;
+int	a;
+int	*p;
+int	**pp;
+int	*A, _A[3], **P, *_P[3];
+int	Ea[3], *Ep[3];
+
+int test(char *what, int val, int ea, int ep, int epp) {
+	int	i;
+
+	if (r != val)
+		printf("%s: expected value %d (%p), got %d (%p)\n",
+			what, val, val, r, r);
+	if (a != ea)
+		printf("%s: expected a=%d (%p), got %d (%p)\n",
+			what, ea, ea, a, a);
+	if ((int) p != ep)
+		printf("%s: expected p=%d (%p), got %d (%p)\n",
+			what, ep, ep, p, p);
+	if ((int) pp != epp)
+		printf("%s: expected pp=%d (%p), got %d (%p)\n",
+			what, epp, epp, pp, pp);
+	for (i=-1; i<2; i++) {
+		if (Ea[i+1] != A[i])
+			printf("%s: expected A[%d]=%d (%p), got %d (%p)\n",
+				what, i, Ea[i+1], Ea[i+1], A[i], A[i]);
+		if (Ep[i+1] != P[i])
+			printf("%s: expected P[%d]=%d (%p), got %d (%p)\n",
+				what, i, Ep[i+1], Ep[i+1], P[i], P[i]);
+	}
+}
+
+void reset(void) {
+	a = 1;
+	A = &_A[1];
+	P = &_P[1];
+	A[-1] = 1;
+	A[0] = 2;
+	A[1] = 3;
+	P[-1] = &A[-1];
+	P[0] = &A[0];
+	P[1] = &A[1];
+	p = A;
+	pp = P;
+}
+
+int main(void) {
+
+/* operators tested: + ++ += - -- -=
+ * in combination with [] and unary *
+ */
+
+/* 	expr	val	a	p	pp	A	P	*/
+|	a+1	2	1	A	P	1,2,3	A-N,A,A+N
+|	1+a	2	1	A	P	1,2,3	A-N,A,A+N
+|	a++	1	2	A	P	1,2,3	A-N,A,A+N
+|	++a	2	2	A	P	1,2,3	A-N,A,A+N
+|	a-2	-1	1	A	P	1,2,3	A-N,A,A+N
+|	2-a	1	1	A	P	1,2,3	A-N,A,A+N
+|	a-(-2)	3	1	A	P	1,2,3	A-N,A,A+N
+|	2-(-a)	3	1	A	P	1,2,3	A-N,A,A+N
+|	a--	1	0	A	P	1,2,3	A-N,A,A+N
+|	--a	0	0	A	P	1,2,3	A-N,A,A+N
+|	a+=3	4	4	A	P	1,2,3	A-N,A,A+N
+|	a+=-3	-2	-2	A	P	1,2,3	A-N,A,A+N
+|	a-=3	-2	-2	A	P	1,2,3	A-N,A,A+N
+|	a-=-3	4	4	A	P	1,2,3	A-N,A,A+N
+|	p+1	p+N	1	A	P	1,2,3	A-N,A,A+N
+|	1+p	p+N	1	A	P	1,2,3	A-N,A,A+N
+|	p++	A	1	A+N	P	1,2,3	A-N,A,A+N
+|	++p	A+N	1	A+N	P	1,2,3	A-N,A,A+N
+|	p-2	A-(2*N)	1	A	P	1,2,3	A-N,A,A+N
+|	p-(-2)	A+(2*N)	1	A	P	1,2,3	A-N,A,A+N
+|	p--	A	1	A-N	P	1,2,3	A-N,A,A+N
+|	--p	A-N	1	A-N	P	1,2,3	A-N,A,A+N
+|	p+=1	A+N	1	A+N	P	1,2,3	A-N,A,A+N
+|	p+=-1	A-N	1	A-N	P	1,2,3	A-N,A,A+N
+|	p-=1	A-N	1	A-N	P	1,2,3	A-N,A,A+N
+|	p-=-1	A+N	1	A+N	P	1,2,3	A-N,A,A+N
+|	pp+1	P+N	1	A	P	1,2,3	A-N,A,A+N
+|	1+pp	P+N	1	A	P	1,2,3	A-N,A,A+N
+|	pp++	P	1	A	P+N	1,2,3	A-N,A,A+N
+|	++pp	P+N	1	A	P+N	1,2,3	A-N,A,A+N
+|	pp-2	P-(2*N)	1	A	P	1,2,3	A-N,A,A+N
+|	pp-(-2)	P+(2*N) 1	A	P	1,2,3	A-N,A,A+N
+|	pp--	P	1	A	P-N	1,2,3	A-N,A,A+N
+|	--pp	P-N	1	A	P-N	1,2,3	A-N,A,A+N
+|	pp+=1	P+N	1	A	P+N	1,2,3	A-N,A,A+N
+|	pp+=-1	P-N	1	A	P-N	1,2,3	A-N,A,A+N
+|	pp-=1	P-N	1	A	P-N	1,2,3	A-N,A,A+N
+|	pp-=-1	P+N	1	A	P+N	1,2,3	A-N,A,A+N
+|	*p+1	3	1	A	P	1,2,3	A-N,A,A+N
+|	1+*p	3	1	A	P	1,2,3	A-N,A,A+N
+|	*p++	2	1	A+N	P	1,2,3	A-N,A,A+N
+|	(*p)++	2	1	A	P	1,3,3	A-N,A,A+N
+|	++*p	3	1	A	P	1,3,3	A-N,A,A+N
+|	*++p	3	1	A+N	P	1,2,3	A-N,A,A+N
+|	*p-2	0	1	A	P	1,2,3	A-N,A,A+N
+|	*p-(-2)	4	1	A	P	1,2,3	A-N,A,A+N
+|	*p--	2	1	A-N	P	1,2,3	A-N,A,A+N
+|	(*p)--	2	1	A	P	1,1,3	A-N,A,A+N
+|	--*p	1	1	A	P	1,1,3	A-N,A,A+N
+|	*--p	1	1	A-N	P	1,2,3	A-N,A,A+N
+|	*p+=1	3	1	A	P	1,3,3	A-N,A,A+N
+|	*p+=-1	1	1	A	P	1,1,3	A-N,A,A+N
+|	*p-=1	1	1	A	P	1,1,3	A-N,A,A+N
+|	*p-=-1	3	1	A	P	1,3,3	A-N,A,A+N
+|	*pp+1	A+N	1	A	P	1,2,3	A-N,A,A+N
+|	1+*pp	A+N	1	A	P	1,2,3	A-N,A,A+N
+|	*pp++	A	1	A	P+N	1,2,3	A-N,A,A+N
+|	(*pp)++	A	1	A	P	1,2,3	A-N,A+N,A+N
+|	++*pp	A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	*++pp	A+N	1	A	P+N	1,2,3	A-N,A,A+N
+|	*pp-1	A-N	1	A	P	1,2,3	A-N,A,A+N
+|	*pp-(-1) A+N	1	A	P	1,2,3	A-N,A,A+N
+|	*pp--	A	1	A	P-N	1,2,3	A-N,A,A+N
+|	(*pp)--	A	1	A	P	1,2,3	A-N,A-N,A+N
+|	--*pp	A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	*--pp	A-N	1	A	P-N	1,2,3	A-N,A,A+N
+|	*pp+=1	A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	*pp+=-1 A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	*pp-=1	A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	*pp-=-1	A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	**pp+1	3	1	A	P	1,2,3	A-N,A,A+N
+|	1+**pp	3	1	A	P	1,2,3	A-N,A,A+N
+|	**pp++	2	1	A	P+N	1,2,3	A-N,A,A+N
+|	(**pp)++ 2	1	A	P	1,3,3	A-N,A,A+N
+|	*(*pp)++ 2	1	A	P	1,2,3	A-N,A+N,A+N
+|	++**pp	3	1	A	P	1,3,3	A-N,A,A+N
+|	**++pp	3	1	A	P+N	1,2,3	A-N,A,A+N
+|	*++*pp	3	1	A	P	1,2,3	A-N,A+N,A+N
+|	**pp-1	1	1	A	P	1,2,3	A-N,A,A+N
+|	**pp-(-1) 3	1	A	P	1,2,3	A-N,A,A+N
+|	**pp--	2	1	A	P-N	1,2,3	A-N,A,A+N
+|	(**pp)-- 2	1	A	P	1,1,3	A-N,A,A+N
+|	*(*pp)-- 2	1	A	P	1,2,3	A-N,A-N,A+N
+|	--**pp	1	1	A	P	1,1,3	A-N,A,A+N
+|	**--pp	1	1	A	P-N	1,2,3	A-N,A,A+N
+|	*--*pp	1	1	A	P	1,2,3	A-N,A-N,A+N
+|	**pp+=1	3	1	A	P	1,3,3	A-N,A,A+N
+|	**pp+=-1 1	1	A	P	1,1,3	A-N,A,A+N
+|	**pp-=1	1	1	A	P	1,1,3	A-N,A,A+N
+|	**pp-=-1 3	1	A	P	1,3,3	A-N,A,A+N
+|	p[0]+1	3	1	A	P	1,2,3	A-N,A,A+N
+|	1+p[0]	3	1	A	P	1,2,3	A-N,A,A+N
+|	p[0]++	2	1	A	P	1,3,3	A-N,A,A+N
+|	++p[0]	3	1	A	P	1,3,3	A-N,A,A+N
+|	p[0]-2	0	1	A	P	1,2,3	A-N,A,A+N
+|	p[0]-(-2) 4	1	A	P	1,2,3	A-N,A,A+N
+|	p[0]--	2	1	A	P	1,1,3	A-N,A,A+N
+|	--p[0]	1	1	A	P	1,1,3	A-N,A,A+N
+|	p[0]+=1	3	1	A	P	1,3,3	A-N,A,A+N
+|	p[0]+=-1 1	1	A	P	1,1,3	A-N,A,A+N
+|	p[0]-=1	1	1	A	P	1,1,3	A-N,A,A+N
+|	p[0]-=-1 3	1	A	P	1,3,3	A-N,A,A+N
+|	pp[0]+1	A+N	1	A	P	1,2,3	A-N,A,A+N
+|	1+pp[0]	A+N	1	A	P	1,2,3	A-N,A,A+N
+|	pp[0]++	A	1	A	P	1,2,3	A-N,A+N,A+N
+|	++pp[0]	A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	pp[0]-1	A-N	1	A	P	1,2,3	A-N,A,A+N
+|	pp[0]-(-1) A+N	1	A	P	1,2,3	A-N,A,A+N
+|	pp[0]--	A	1	A	P	1,2,3	A-N,A-N,A+N
+|	--pp[0]	A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	pp[0]+=1 A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	pp[0]+=-1 A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	pp[0]-=1 A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	pp[0]-=-1 A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	*pp[0]+1 3	1	A	P	1,2,3	A-N,A,A+N
+|	(*pp)[0]+1 3	1	A	P	1,2,3	A-N,A,A+N
+|	pp[0][0]+1 3	1	A	P	1,2,3	A-N,A,A+N
+|	1+*pp[0] 3	1	A	P	1,2,3	A-N,A,A+N
+|	1+(*pp)[0] 3	1	A	P	1,2,3	A-N,A,A+N
+|	1+pp[0][0] 3	1	A	P	1,2,3	A-N,A,A+N
+|	*pp[0]++ 2	1	A	P	1,2,3	A-N,A+N,A+N
+|	(*pp)[0]++ 2	1	A	P	1,3,3	A-N,A,A+N
+|	pp[0][0]++ 2	1	A	P	1,3,3	A-N,A,A+N
+|	++*pp[0] 3	1	A	P	1,3,3	A-N,A,A+N
+|	++(*pp)[0] 3	1	A	P	1,3,3	A-N,A,A+N
+|	++pp[0][0] 3	1	A	P	1,3,3	A-N,A,A+N
+|	*pp[0]-1 1	1	A	P	1,2,3	A-N,A,A+N
+|	(*pp)[0]-1 1	1	A	P	1,2,3	A-N,A,A+N
+|	*pp[0]-(-1) 3	1	A	P	1,2,3	A-N,A,A+N
+|	(*pp)[0]-(-1) 3	1	A	P	1,2,3	A-N,A,A+N
+|	*pp[0]-- 2	1	A	P	1,2,3	A-N,A-N,A+N
+|	(*pp)[0]-- 2	1	A	P	1,1,3	A-N,A,A+N
+|	--*pp[0] 1	1	A	P	1,1,3	A-N,A,A+N
+|	--(*pp)[0] 1	1	A	P	1,1,3	A-N,A,A+N
+|	--pp[0][0] 1	1	A	P	1,1,3	A-N,A,A+N
+|	*pp[0]+=1 3	1	A	P	1,3,3	A-N,A,A+N
+|	(*pp)[0]+=1 3	1	A	P	1,3,3	A-N,A,A+N
+|	pp[0][0]+=1 3	1	A	P	1,3,3	A-N,A,A+N
+|	*pp[0]+=-1 1	1	A	P	1,1,3	A-N,A,A+N
+|	(*pp)[0]+=-1 1	1	A	P	1,1,3	A-N,A,A+N
+|	pp[0][0]+=-1 1	1	A	P	1,1,3	A-N,A,A+N
+|	*pp[0]-=1 1	1	A	P	1,1,3	A-N,A,A+N
+|	(*pp)[0]-=1 1	1	A	P	1,1,3	A-N,A,A+N
+|	pp[0][0]-=1 1	1	A	P	1,1,3	A-N,A,A+N
+|	*pp[0]-=-1 3	1	A	P	1,3,3	A-N,A,A+N
+|	(*pp)[0]-=-1 3	1	A	P	1,3,3	A-N,A,A+N
+|	pp[0][0]-=-1 3	1	A	P	1,3,3	A-N,A,A+N
+|	p[-1]+1	2	1	A	P	1,2,3	A-N,A,A+N
+|	p[0]+1	3	1	A	P	1,2,3	A-N,A,A+N
+|	p[1]+1	4	1	A	P	1,2,3	A-N,A,A+N
+|	p[-1]++	1	1	A	P	2,2,3	A-N,A,A+N
+|	p[0]++	2	1	A	P	1,3,3	A-N,A,A+N
+|	p[1]++	3	1	A	P	1,2,4	A-N,A,A+N
+|	++p[-1]	2	1	A	P	2,2,3	A-N,A,A+N
+|	++p[0]	3	1	A	P	1,3,3	A-N,A,A+N
+|	++p[1]	4	1	A	P	1,2,4	A-N,A,A+N
+|	p[-1]-1	0	1	A	P	1,2,3	A-N,A,A+N
+|	p[0]-1	1	1	A	P	1,2,3	A-N,A,A+N
+|	p[1]-1	2	1	A	P	1,2,3	A-N,A,A+N
+|	p[-1]--	1	1	A	P	0,2,3	A-N,A,A+N
+|	p[0]--	2	1	A	P	1,1,3	A-N,A,A+N
+|	p[1]--	3	1	A	P	1,2,2	A-N,A,A+N
+|	--p[-1]	0	1	A	P	0,2,3	A-N,A,A+N
+|	--p[0]	1	1	A	P	1,1,3	A-N,A,A+N
+|	--p[1]	2	1	A	P	1,2,2	A-N,A,A+N
+|	p[-1]+=1 2	1	A	P	2,2,3	A-N,A,A+N
+|	p[0]+=1	3	1	A	P	1,3,3	A-N,A,A+N
+|	p[1]+=1	4	1	A	P	1,2,4	A-N,A,A+N
+|	p[-1]+=-1 0	1	A	P	0,2,3	A-N,A,A+N
+|	p[0]+=-1 1	1	A	P	1,1,3	A-N,A,A+N
+|	p[1]+=-1 2	1	A	P	1,2,2	A-N,A,A+N
+|	p[-1]-=1 0	1	A	P	0,2,3	A-N,A,A+N
+|	p[0]-=1	1	1	A	P	1,1,3	A-N,A,A+N
+|	p[1]-=1	2	1	A	P	1,2,2	A-N,A,A+N
+|	p[-1]-=-1 2	1	A	P	2,2,3	A-N,A,A+N
+|	p[0]-=-1 3	1	A	P	1,3,3	A-N,A,A+N
+|	p[1]-=-1 4	1	A	P	1,2,4	A-N,A,A+N
+|	pp[-1]+1 A	1	A	P	1,2,3	A-N,A,A+N
+|	pp[0]+1	A+N	1	A	P	1,2,3	A-N,A,A+N
+|	pp[1]+1	A+N2	1	A	P	1,2,3	A-N,A,A+N
+|	pp[-1]++ A-N	1	A	P	1,2,3	A,A,A+N
+|	pp[0]++	A	1	A	P	1,2,3	A-N,A+N,A+N
+|	pp[1]++	A+N	1	A	P	1,2,3	A-N,A,A+N2
+|	++pp[-1] A	1	A	P	1,2,3	A,A,A+N
+|	++pp[0]	A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	++pp[1]	A+N2	1	A	P	1,2,3	A-N,A,A+N2
+|	pp[-1]-1 A-N2	1	A	P	1,2,3	A-N,A,A+N
+|	pp[0]-1	A-N	1	A	P	1,2,3	A-N,A,A+N
+|	pp[1]-1	A	1	A	P	1,2,3	A-N,A,A+N
+|	pp[-1]-- A-N	1	A	P	1,2,3	A-N2,A,A+N
+|	pp[0]--	A	1	A	P	1,2,3	A-N,A-N,A+N
+|	pp[1]--	A+N	1	A	P	1,2,3	A-N,A,A
+|	--pp[-1] A-N2	1	A	P	1,2,3	A-N2,A,A+N
+|	--pp[0]	A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	--pp[1]	A	1	A	P	1,2,3	A-N,A,A
+|	pp[-1]+=1 A	1	A	P	1,2,3	A,A,A+N
+|	pp[0]+=1 A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	pp[1]+=1 A+N2	1	A	P	1,2,3	A-N,A,A+N2
+|	pp[-1]+=-1 A-N2	1	A	P	1,2,3	A-N2,A,A+N
+|	pp[0]+=-1 A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	pp[1]+=-1 A	1	A	P	1,2,3	A-N,A,A
+|	pp[-1]-=1 A-N2	1	A	P	1,2,3	A-N2,A,A+N
+|	pp[0]-=1 A-N	1	A	P	1,2,3	A-N,A-N,A+N
+|	pp[1]-=1 A	1	A	P	1,2,3	A-N,A,A
+|	pp[-1]-=-1 A	1	A	P	1,2,3	A,A,A+N
+|	pp[0]-=-1 A+N	1	A	P	1,2,3	A-N,A+N,A+N
+|	pp[1]-=-1 A+N2	1	A	P	1,2,3	A-N,A,A+N2
+
+	return EXIT_SUCCESS;
+}

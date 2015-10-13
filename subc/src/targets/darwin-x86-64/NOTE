@@ -1,0 +1,2 @@
+This port depends on the system libc (GLIBC), which is
+a notorious source of trouble. Expect bugs!

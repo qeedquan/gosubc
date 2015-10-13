@@ -1,0 +1,1 @@
+../targets/linux-x86-64/crt0-linux-x86-64.s

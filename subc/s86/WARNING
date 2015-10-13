@@ -1,0 +1,11 @@
+
+	The S86 tool chain contained in this directory is a work
+	in (slow) progress. It was originally designed as a 16-bit
+	native DOS-hosted tool chain, and has then been hacked to
+	serve as a cross compiler back end hosted on a 32-bit (or
+	64-bit) system. Expect bugs!
+
+	Do not try to compile these programs with anything but
+	SubC (or at least make sure that char is unsigned and
+	CHAR_MAX is 255).
+

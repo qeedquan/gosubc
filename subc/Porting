@@ -1,0 +1,155 @@
+
+
+	PORTING SUBC TO DIFFERENT PLATFORMS
+
+
+	(1)  Create a new target description file
+
+	Copy one of the existing cg*.c files from the src/targets/cg/
+	directory to create a new target description. The target
+	description will contain the instructions that will be
+	emitted by the code generator. Also copy the corresponding
+	cg*.h file. For example, to create a "CPU" back-end:
+
+		cp src/targets/cg/cg386.c src/targets/cg/cgCPU.c
+		cp src/targets/cg/cg386.h src/targets/cg/cgCPU.h
+
+
+	(2) Select the proper machine word size
+
+	Edit the newly created header file and change its BPW constant
+	to the *natural* machine word size on the new target. This
+	would be 32 bits for a 32-bit processor, 64 bits for a 64-bit
+	processor, etc. Note that the word size selected here must be
+	large enough to hold an arbitrary address (a pointer) on the
+	target. Incidentally, the selected size will be sizeof(int) on
+	the new back-end. Also change the CPU constant to the name of
+	your CPU.
+
+		vi src/targets/cg/cgCPU.h
+
+
+	(3) Create an environment description for your OS
+
+	The SubC compiler uses some external resources that are part
+	of your operating system, like the assembler, linker, and
+	maybe the system's C library. These environment-specific
+	information should be contained in a separate directory in
+	target/ that is named after the targeted OS and the processor:
+
+		mkdir src/targets/OS-CPU
+
+	That directory must contain a file that is also named after
+	the OS and processor, but with a "sys-" prefix (e.g.
+	sys-linux-386.h). This file has to contain the name of the OS
+	and the full paths or templates for accessing any external
+	resources. Best use one of the existing files for a template.
+
+		vi src/targets/OS-CPU/sys-OS-CPU.h
+
+
+	(4) Create a target description
+
+	This is one of the hard parts. You will have to replace the
+	code emitted by each function in the new target description
+	file to generate code for your new platform. If you are an
+	experienced compiler writer and you are familiar with one of
+	the existing targets, you may be able to guess the proper
+	sequences. Otherwise, you probably need a copy of the book
+	"Practical Compiler Construction"[1] now, which explains the
+	target description format in detail.
+
+	[1] See the README file.
+
+	For instance, to adapt the 386 target to the x86-64 processor,
+	this step basically involves (a) replacing register names (%eax
+	to %rax, etc), (b) replacing instruction suffixes (movl->movq,
+	etc), (c) replacing ".long" by ".quad", and (d) adjusting all
+	values that deal with word size, i.e. adding multiples of 8
+	instead of 4 to registers in pointer arithmetics, shifting by
+	3 instead of 2, etc.
+
+	Of course, other processors will differ from the 386 by a far
+	greater margin, so this step can be quite a piece of work.
+	The conclusion part of the book contains some practical tips
+	for approaching this task.
+
+
+	(5) Create an OS-specific C startup file
+
+	Copy the crt0-*.s file from one of the existing
+	src/targets/OS-CPU/ directories to create a new
+	startup file, e.g.:
+
+		cp src/targets/crt0-freebsd-386.s \
+		   src/targets/crt0-OS-CPU.s
+
+	Again, OS is your OS, and CPU is the new CPU being
+	targeted.
+
+
+	(6) Create the OS interface
+
+	This step is a mess and requires some decent in-depth knowledge
+	of the target platform, i.e. its internal command line argument
+	format, environment location, its calling conventions, system
+	call interface, etc.
+
+	Again, if you are really familiar with one of the supported
+	platforms, you may be able to rewrite the individual functions.
+	Otherwise, this is a good time to pick up a copy of "Practical
+	Compiler Construction", which also explains this part in depth.
+
+	You may run into a lot of trouble at this point. Be patient,
+	this is to be expected.
+
+		vi src/targets/OS-CPU/crt0-OS-CPU.s
+
+	There is a useful tool called "sys" in the tests/ directory of
+	the SubC directory tree. When compiled with SubC, it can be used
+	to test the system call wrapper, program argument passing and
+	environment access in the crt0 module.
+
+		./scc0 -o sys ../tests/sys.c
+
+
+	(7) Compile, test, repeat
+
+	A lot of things *will* go wrong. Do not get discouraged! This
+	is normal. First make the compiler emit syntactically correct
+	assembler code. Then make it compile the library. Then test
+	some small programs. Then compile the compiler with itself.
+	Once it passes the triple test (make test), the compiler can
+	be considered to be stable.
+
+	Pointer arithmetics can be particularly nasty, so there is an
+	ad-hoc pointer arithmetics test suite included in the SubC
+	archive. Just run 'make ptest' in src/. If it does not print
+	anything, fine!
+
+	The system call interface can be ad-hoc tested by running
+	"make systest". It is pretty likely to blow up at some point
+	when there is something wrong with the crt0 module.
+
+	In a similar way, most parts of the C library can be tested
+	by running "make libtest".
+
+	Signal handling is particurlarly nasty and almost impossible
+	to get right these days. "make sigtest" will help you find out
+	if your signal() implementation blows up.
+
+
+	(8) Add your back-end to the configure script
+
+	Have a look at the configure script in the root of the SubC
+	source tree and add your configuration. It is just a simple,
+	human readable script containing no magic whatsoever, so this
+	should be a piece of cake.
+
+		vi configure
+
+
+	(9) Optionally: send your patches to the author
+
+	Thank you!
+

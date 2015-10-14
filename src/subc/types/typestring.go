@@ -107,9 +107,6 @@ func writeTuple(buf *bytes.Buffer, tup *Tuple, variadic bool, visited []Type) {
 }
 
 // WriteSignature writes the representation of the signature sig to buf,
-// without a leading "func" keyword.
-// The Qualifier controls the printing of
-// package-level objects, and may be nil.
 func WriteSignature(buf *bytes.Buffer, sig *Signature) {
 	writeSignature(buf, sig, make([]Type, 8))
 }

@@ -52,6 +52,7 @@ var DefaultConfig = Config{
 type reader struct {
 	Reader
 	Position
+	cwd string
 }
 
 type stateFn func(*Scanner) stateFn
@@ -92,7 +93,7 @@ const (
 )
 
 // newReader returns a reader for a scanner to use.
-func newReader(name string, r Reader) *reader {
+func newReader(name string, r Reader, cwd string) *reader {
 	return &reader{
 		Reader: r,
 		Position: Position{
@@ -100,6 +101,7 @@ func newReader(name string, r Reader) *reader {
 			Line:   1,
 			Column: 1,
 		},
+		cwd: cwd,
 	}
 }
 
@@ -109,7 +111,7 @@ func New(conf Config, name string, r Reader) *Scanner {
 	l := &Scanner{
 		Tokens:    make(chan Token),
 		conf:      conf,
-		r:         newReader(name, r),
+		r:         newReader(name, r, "."),
 		peekch:    notPeeked,
 		macros:    make(map[string]string),
 		directive: !conf.expandingMacro,
@@ -138,7 +140,7 @@ func (l *Scanner) Scan() Token {
 // Close drains the tokens from the channel, it is used for cleaning up.
 func (l *Scanner) Close() error {
 	go func() {
-		for range l.Tokens {
+		for _ = range l.Tokens {
 		}
 	}()
 	return nil
@@ -962,10 +964,10 @@ func (l *Scanner) includeDirective(p *Scanner, line string) {
 	switch t := <-p.Tokens; t.Type {
 	case String:
 		name = t.Text[1 : len(t.Text)-1]
-		paths = append(paths, ".")
+		paths = append(paths, l.r.cwd)
 		xname = strconv.Quote(name)
 	case Lt:
-		xpaths := []string{"."}
+		xpaths := []string{l.r.cwd}
 		xpaths = append(xpaths, paths...)
 		paths = xpaths
 		name = line[t.Pos.Offset+1:]
@@ -1000,7 +1002,7 @@ func (l *Scanner) includeDirective(p *Scanner, line string) {
 				l.errorf("#include: max number of %v includes reached", l.conf.MaxIncludes)
 				return
 			}
-			r := newReader(filename, f)
+			r := newReader(filename, f, filepath.Dir(filename))
 			l.s = append(l.s, r)
 			l.r = r
 			l.resetInput()

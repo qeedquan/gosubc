@@ -521,7 +521,7 @@ func copyPrim(prim ast.Expr) ast.Expr {
 	case *ast.RecordType:
 		y := &ast.RecordType{}
 		*y = *x
-		d = x
+		d = y
 	case nil:
 	default:
 		panic(fmt.Sprintf("unimplemented new primary type: %v", x))

@@ -1,5 +1,5 @@
 /*
- *	NMH's Simple C Compiler, 2011,2012
+ *	NMH's Simple C Compiler, 2011,2016
  *	Lexical analysis (scanner)
  */
 
@@ -172,18 +172,26 @@ int skip(void) {
 		nl = 0;
 		if (c != '/')
 			break;
-		if ((c = next()) != '*') {
+		c = next();
+		if (c != '*' && c != '/') {
 			putback(c);
 			c = '/';
 			break;
 		}
-		p = 0;
-		while ((c = next()) != EOF) {
-			if ('/' == c && '*' == p) {
-				c = next();
-				break;
+		if (c == '/') {
+			while ((c = next()) != EOF) {
+				if (c == '\n') break;
 			}
-			p = c;
+                }
+                else {
+			p = 0;
+			while ((c = next()) != EOF) {
+				if ('/' == c && '*' == p) {
+					c = next();
+					break;
+				}
+				p = c;
+			}
 		}
 	}
 	return c;

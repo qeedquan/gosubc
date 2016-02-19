@@ -1,8 +1,8 @@
 9412 2 ./BUGS
-13866 12 ./Changes
-56109 1 ./Makefile
+25794 12 ./Changes
+23278 1 ./Makefile
 8383 6 ./Porting
-24671 11 ./README
+7522 11 ./README
 25010 2 ./NOTES-WINDOWS
 16026 1 ./Todo
 40751 1 ./book/s.c
@@ -36,13 +36,13 @@
 12376 7 ./src/main.c
 5124 2 ./src/misc.c
 14383 4 ./src/prep.c
-45927 10 ./src/scan.c
+34028 10 ./src/scan.c
 48520 5 ./src/stmt.c
 58097 8 ./src/sym.c
 27839 3 ./src/cgen.h
 52598 2 ./src/data.h
 21149 4 ./src/decl.h
-6919 3 ./src/defs.h
+6677 3 ./src/defs.h
 59304 1 ./src/prec.h
 866 5 ./src/Makefile
 59786 1 ./src/include/stdlib.h

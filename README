@@ -21,8 +21,6 @@ the official one. The differences are listed below:
 
 * __TIME__ and __DATE__ are predefined in the preprocessor
 
-* // comments accepted
-
 * goto is supported, labels can be declared after local variable declarations.
 
 * function parameters can have no names, ie, void f(int, int a, int, char x)

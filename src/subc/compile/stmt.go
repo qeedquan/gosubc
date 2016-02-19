@@ -45,6 +45,7 @@ func (c *compiler) stmt(s ast.Stmt) {
 		}
 	case *ast.ExprStmt:
 		c.expr(s.X)
+		c.cg.Clear(true)
 	default:
 		c.invalidAST(pos, "bad statement: %T", s)
 	}

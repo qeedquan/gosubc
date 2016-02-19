@@ -9,9 +9,6 @@ This is not true in general that declaring f() means variadic, it actually means
 function in SubC, we emulate this behavior.
 
 Known Bugs:
-* This compiler and SubC is known to miscompile some programs, I have those in the bugs
-directory. The bad-expr.c is the one where both will miscompile on.
-
 
 * The SubC bootstrap compiler made by $CC in gcc/clang uses 4 bytes int, so it will
 generate wrong code for x86_64 regarding numbers out of 4 bytes range like INT_MIN,
@@ -37,15 +34,6 @@ char x[10];
 a[x[0]] does not work but a[b[0]] does work even though b[0] is generate a valid integer index
 a workaround is something like a[x[0]+0] so it will promote it to an int
 
-* SubC constant folding is wrong for right shifts
-
 * SubC currently allows any unary ops on any types, even on structs, ie, struct file f; !f; will work 
 our compiler is stricter in that it only allows it for pointer and integer types
 
-* The darwin amd64 code generator 
-void cgdefc(int c)	{ ngen("%s\t'%c", ".byte", c); } is missing a ' after %c
-
-Bugs found in SubC library:
-
-* the freopen.c function in the stdlib has incorrect precedence at line 20 the == will evaluate before the &
-if (f->iom & (_FREAD|_FWRITE) == _FREAD|_FWRITE)

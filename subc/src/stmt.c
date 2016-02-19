@@ -325,7 +325,7 @@ static void stmt(void) {
 	case SEMI:	Token = scan(); break;
 	case DEFAULT:	wrong_ctx(DEFAULT); break;
 	case CASE:	wrong_ctx(CASE); break;
-	default:	expr(lv, 0); semi(); break;
+	default:	expr(lv, 0); semi(); clear(1); break;
 	}
 	clear(1);
 }

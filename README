@@ -3,7 +3,7 @@ Nils Holms (http://www.t3x.org/) for teaching newcomers
 how to write a compiler.
 
 This is a reimplementation of SubC based on Nils compiler 
-(subc-20150218.tgz) and the Go standard packages in Go. 
+(subc-20160217.tgz) and the Go standard packages in Go. 
 The code generation is based on the SubC compiler 
 while the lexer, parser, and type checker is based on the Go 
 standard library packages. The code emitted by this compiler

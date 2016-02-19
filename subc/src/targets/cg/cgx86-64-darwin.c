@@ -254,7 +254,7 @@ void cgdefb(int v)	{ ngen("%s\t%d", ".byte", v); }
 void cgdefw(int v)	{ ngen("%s\t%d", ".quad", v); }
 void cgdefp(int v)	{ ngen("%s\t%d", ".quad", v); }
 void cgdefl(int v)	{ lgen("%s\t%c%d", ".quad", v); }
-void cgdefc(int c)	{ ngen("%s\t'%c", ".byte", c); }
+void cgdefc(int c)	{ ngen("%s\t'%c'", ".byte", c); }
 void cggbss(char *s, int z)	{ ngen(".comm\t%s,%d", s, z); }
 void cglbss(char *s, int z)	{ ngen(".lcomm\t%s,%d", s, z); }
 void cgalign(void)	{ /* unused */ }

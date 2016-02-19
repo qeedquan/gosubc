@@ -1,6 +1,6 @@
 
-	SubC Compiler, Version 2015-02-18
-	By Nils M Holm, 2011--2015
+	SubC Compiler, Version 2016-02-16
+	By Nils M Holm, 2011--2016
 	Placed in the public domain
 
 
@@ -37,7 +37,7 @@
 		NetBSD		-	-	x86-64
 		OpenBSD		386%	-	-
 		Windows/MinGW	386	-	-
-		Darwin		-	-	x86-64*%
+		Darwin		-	-	x86-64%(/)
 		DOS		8086!
 
 		  %  uses the syscall layer of the host libc
@@ -196,7 +196,8 @@
 	   not supported.
 
 	o  Function pointers are limited to one single type, int(*)(),
-	   and they have no argument types.
+	   and they have no argument types. Note that this declaration
+	   will in fact generate a pointer to int(*)(void).
 
 	o  There is no assert() due to the lack of parameterized macros.
 

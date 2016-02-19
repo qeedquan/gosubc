@@ -95,6 +95,8 @@ func (c *Emitter) Clear(q bool) {
 	c.Acc = false
 	if q {
 		c.Q.Type = Empty
+		c.Q.Cmp = Empty
+		c.Q.Bool = Bnone
 	}
 }
 

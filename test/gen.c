@@ -1,5 +1,5 @@
 /*
- *	NMH's Simple C Compiler, 2011--2014
+ *	NMH's Simple C Compiler, 2011--2016
  *	Code generator (emitter)
  */
 
@@ -12,7 +12,11 @@ int	Acc = 0;
 
 void clear(int q) {
 	Acc = 0;
-	if (q) Q_type = empty;
+	if (q) {
+		Q_type = empty;
+		Q_cmp = cnone;
+		Q_bool = bnone;
+	}
 }
 
 void load(void) {

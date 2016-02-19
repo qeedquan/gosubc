@@ -1,3 +1,7 @@
+2016-02-16 Fix: Darwin back-end emitted wrong asm code. Thanks, Steve Ward!
+2016-02-16 Fix: SubC would miscompile x<256;x=0; (crash). Thanks, Quan Tran!
+2016-02-16 Fix: freopen() had a precedence error. (also by Quan Tran)
+2016-02-16 Fix: Constant folding miscalculated right-shift. (also by Quan Tran)
 2015-02-18 Fix: Emitted wrong arguments to MULQ on x86 in struct* scaling.
 2015-02-02 Fix: Long init lists in array declarations could run out of nodes.
 2014-12-07 Fix: strncpy() should pad destination. Thanks, Alexey Frunze!

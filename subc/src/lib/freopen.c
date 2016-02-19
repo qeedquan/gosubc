@@ -1,5 +1,5 @@
 /*
- *	NMH's Simple C Compiler, 2012
+ *	NMH's Simple C Compiler, 2012,2016
  *	freopen()
  */
 
@@ -17,7 +17,7 @@ FILE *freopen(char *path, char *mode, FILE *f) {
 		errno = EINVAL;
 		return NULL;
 	}
-	if (f->iom & (_FREAD|_FWRITE) == _FREAD|_FWRITE)
+	if ((f->iom & (_FREAD|_FWRITE)) == _FREAD|_FWRITE)
 		;
 	else if (f->iom & _FREAD && *mode != 'r') {
 		fclose(f);

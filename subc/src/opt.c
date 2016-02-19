@@ -52,7 +52,7 @@ static node *fold2(node *n) {
 			v = vl << vr;
 			break;
 	case OP_RSHIFT:	if (vr > BPW*8-1) return n;
-			v = vl << vr;
+			v = vl >> vr;
 			break;
 	case OP_EQUAL:	v = vl == vr; break;
 	case OP_NOTEQ:	v = vl != vr; break;

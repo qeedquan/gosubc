@@ -1,5 +1,5 @@
 
-	A list of bugs submitted by Quan Tran in 10/2015.
+	A list of unresolved bugs submitted by Quan Tran in 10/2015.
 
 	Thanks a lot!
 
@@ -18,7 +18,7 @@
 
 	void f(struct foo x) {}
 
-	Switch statements may contain duplicated cases.
+	Switch statements may contain duplicate cases.
 
 	SubC allows externs in local declarations to be initialized:
 

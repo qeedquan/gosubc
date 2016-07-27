@@ -1,3 +1,5 @@
+2016-07-26 Added NetBSD/386 port supplied by Minux. Thanks!
+2016-07-26 Applied signal() patch for NetBSD/x86-64. Thanks, Minux!
 2016-02-17 Patch: added // comments. Thanks again, Steve!
 2016-02-16 Fix: Darwin back-end emitted wrong asm code. Thanks, Steve Ward!
 2016-02-16 Fix: SubC would miscompile x<256;x=0; (crash). Thanks, Quan Tran!

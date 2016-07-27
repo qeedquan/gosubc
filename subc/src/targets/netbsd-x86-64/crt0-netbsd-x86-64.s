@@ -1,5 +1,5 @@
 #
-#	NMH's Simple C Compiler, 2012--2014
+#	NMH's Simple C Compiler, 2012--2016
 #	C runtime module for FreeBSD/x86-64
 #
 
@@ -296,17 +296,16 @@ rasok:	ret
 
 	.globl	Csignal
 Csignal:
-
-#	If your signal handlers segfault, uncomment the below code
-#	and link against /usr/lib/libc.a.
-#
-#	movq	8(%rsp),%rdi	# sig
-#	movq	16(%rsp),%rsi	# fn /act
-#	call	signal
-#	ret
-
 	movq	8(%rsp),%rdi	# sig
 	movq	16(%rsp),%rax	# fn /act
+	leaq	_sighands,%rbx
+	cmpq	$2,%rax		# SIG_ERR
+	jle	1f
+	cmpq	$64,%rdi	# size of _sighands array
+	jge	1f		# the kernel should reject it anyways
+	movq	%rax,0(%rbx,%rdi,8)
+	leaq	_sighandler,%rax
+1:
 	subq	$32,%rsp	# struct sigaction oact
 	subq	$32,%rsp	# struct sigaction act
 	movq	%rax,(%rsp)	# act.sa_handler / sa_action
@@ -320,7 +319,9 @@ Csignal:
 	movq	%rsp,%rsi	# act
 	movq	%rsp,%rdx	# oact
 	addq	$32,%rdx
-	movq	$291,%rax	# SYS_compat_16___sigaction14
+	leaq	_sigtramp,%r10	# tramp
+	movq	$2,%r8		# vers
+	movq	$340,%rax	# SYS___sigaction_sigtramp
 	syscall
 	jnc	sacok
 	addq	$64,%rsp
@@ -330,3 +331,22 @@ sacok:	movq	32(%rsp),%rax	# oact.sa_handler / sa_action
 	addq	$64,%rsp
 	ret
 
+_sighandler:
+	# translate kernel ABI to subc ABI, and handles signal return
+	pushq	%rdx		# save ucontext
+	pushq	%rdi		# signo
+	leaq	_sighands,%rbx
+	call	*0(%rbx,%rdi,8)
+	addq	$8,%rsp
+	popq	%rdi
+	movq	$308,%rax	# SYS_setcontext
+	syscall
+	movq	$42,%rdi
+	movq	$1,%rax		# SYS_exit
+	syscall
+
+_sigtramp:
+	jmp	_sigtramp	# not used, but kernel requires
+				# non-NULL sigtramp
+
+	.comm _sighands, 8*64	# saves the signal handlers, max 64 signals

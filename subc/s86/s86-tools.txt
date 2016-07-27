@@ -169,7 +169,7 @@
 
 	-o file
 	Write the executable output to the given file. The default
-	output file is "a_out.exe".
+	output file is "aout.exe".
 
 	-L dir
 	Search libraries (specified with -l) in the given directory.

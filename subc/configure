@@ -48,6 +48,7 @@ case $os/$mac in
 FreeBSD/i386)		os=freebsd ; mac=386    ; int=32 ;;
 FreeBSD/arm)		os=freebsd ; mac=armv6	; int=32 ;;
 FreeBSD/amd64)		os=freebsd ; mac=x86-64 ; int=64 ;;
+NetBSD/i386)		os=netbsd  ; mac=386    ; int=32 ;;
 NetBSD/amd64)		os=netbsd  ; mac=x86-64 ; int=64 ;;
 OpenBSD/i386)		os=openbsd ; mac=386    ; int=32 ;;
 Linux/i386)		os=linux   ; mac=386    ; int=32 ;;

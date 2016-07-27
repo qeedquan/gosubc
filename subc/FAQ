@@ -33,9 +33,13 @@
 	Note that SIG_DFL and SIG_IGN do work, even on newer systems,
 	only signal handlers crash when invoked.
 
-	The only work-around is to use the signal wrapper in the
-	system's C library, which may cause other problems, though.
-	It also causes a massive increase in executable size.
+	One work-around is to use the signal wrapper in the system's
+	C library, which may cause other problems, though. It also
+	causes a massive increase in executable size.
+
+	A better, albeit more complicated, work-around would be to
+	implement signal() properly. See the implementation by Minux in
+	the NetBSD ports for a starting point.
 
 
 	***** What if the triple test fails?

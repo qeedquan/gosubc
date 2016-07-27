@@ -1,9 +1,11 @@
-9412 2 ./BUGS
-25794 12 ./Changes
-23278 1 ./Makefile
-8383 6 ./Porting
-7522 11 ./README
+4574 12 ./Changes
+48198 5 ./FAQ
+47918 1 ./Makefile
+52379 6 ./NOTES-DOS
 25010 2 ./NOTES-WINDOWS
+8383 6 ./Porting
+21478 11 ./README
+25122 2 ./Status
 16026 1 ./Todo
 40751 1 ./book/s.c
 42598 1 ./book/p.c
@@ -12,8 +14,7 @@
 42915 3 ./book/cg3.c
 38847 3 ./book/cg4.c
 56897 6 ./book/opt1.c
-33441 3 ./configure
-38892 2 ./Status
+62555 3 ./configure
 35488 1 ./s86/exe.h
 43140 8 ./s86/sar.c
 22905 1 ./s86/sym.h
@@ -26,7 +27,7 @@
 62845 16 ./s86/sld.c
 46728 2 ./s86/xhd.c
 52653 4 ./s86/xstrip.c
-20172 13 ./s86/s86-tools.txt
+17678 13 ./s86/s86-tools.txt
 9851 1 ./s86/arc.h
 34201 1 ./s86/obj.h
 31533 13 ./src/decl.c
@@ -42,7 +43,7 @@
 27839 3 ./src/cgen.h
 52598 2 ./src/data.h
 21149 4 ./src/decl.h
-6677 3 ./src/defs.h
+56112 3 ./src/defs.h
 59304 1 ./src/prec.h
 866 5 ./src/Makefile
 59786 1 ./src/include/stdlib.h
@@ -152,9 +153,8 @@
 13458 1 ./src/targets/lib/system-dos.c
 37055 7 ./src/targets/freebsd-armv6/crt0-freebsd-armv6.s
 63869 1 ./src/targets/freebsd-armv6/sys-freebsd-armv6.h
-6172 6 ./src/targets/netbsd-x86-64/crt0-netbsd-x86-64.s
+61806 6 ./src/targets/netbsd-x86-64/crt0-netbsd-x86-64.s
 30106 1 ./src/targets/netbsd-x86-64/sys-netbsd-x86-64.h
-62711 1 ./src/targets/netbsd-x86-64/NOTE
 76 1 ./src/targets/include/limits-16.h
 41675 1 ./src/targets/include/limits-32.h
 38872 1 ./src/targets/include/limits-64.h
@@ -185,6 +185,8 @@
 60588 1 ./src/targets/darwin-x86-64/NOTE
 45253 6 ./src/targets/freebsd-386/crt0-freebsd-386.s
 25856 1 ./src/targets/freebsd-386/sys-freebsd-386.h
+22905 1 ./src/targets/netbsd-386/sys-netbsd-386.h
+60027 6 ./src/targets/netbsd-386/crt0-netbsd-386.s
 19879 9 ./src/tree.c
 11412 4 ./src/opt.c
 58342 1 ./tests/ptest.awk
@@ -197,5 +199,4 @@
 6725 2 ./tests/triple-test.sh
 7177 1 ./tests/osversion.sh
 13757 2 ./winbuild.bat
-52379 6 ./NOTES-DOS
-25141 5 ./FAQ
+32584 2 ./BUGS

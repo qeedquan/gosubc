@@ -1,5 +1,5 @@
 
-	SubC Compiler, Version 2016-02-17
+	SubC Compiler, Version 2016-07-26
 	By Nils M Holm, 2011--2016
 	Placed in the public domain
 
@@ -34,7 +34,7 @@
 
 		FreeBSD		386	armv6	x86-64
 		Linux		386	-	x86-64
-		NetBSD		-	-	x86-64
+		NetBSD		386	-	x86-64
 		OpenBSD		386%	-	-
 		Windows/MinGW	386	-	-
 		Darwin		-	-	x86-64%(/)

@@ -2,6 +2,7 @@ package parse
 
 import (
 	"fmt"
+	"text/scanner"
 
 	"subc/ast"
 	"subc/scan"
@@ -116,7 +117,7 @@ func (p *parser) putBack(tok scan.Token) {
 type bailout struct{}
 
 // errorf reports an error.
-func (p *parser) errorf(pos scan.Position, format string, args ...interface{}) {
+func (p *parser) errorf(pos scanner.Position, format string, args ...interface{}) {
 	text := fmt.Sprintf(format, args...)
 	p.errors = append(p.errors, scan.ErrorMessage{pos, text, false})
 	if p.conf.MaxErrors > 0 && len(p.errors) >= p.conf.MaxErrors {
@@ -145,7 +146,7 @@ func (p *parser) expectIdent() *ast.Ident {
 
 // synch synchronizes the parsing to a known clean slate upon a bad parse.
 // It looks for a synchronizing token, usually a semicolon.
-func (p *parser) synch(lastPos scan.Position, typ scan.Type) scan.Span {
+func (p *parser) synch(lastPos scanner.Position, typ scan.Type) scan.Span {
 	pos := p.peek().Pos
 	end := pos
 	for {

@@ -1,7 +1,11 @@
 // Package ast defines all the nodes for a SubC AST.
 package ast
 
-import "subc/scan"
+import (
+	"text/scanner"
+
+	"subc/scan"
+)
 
 // Node is a generic interface that all AST nodes
 // must implement.
@@ -85,7 +89,7 @@ type RecordDecl struct {
 
 // BadDecl is a bad declaration.
 type BadDecl struct {
-	From, To scan.Position
+	From, To scanner.Position
 }
 
 // BasicType represents a type.
@@ -126,7 +130,7 @@ type BinaryExpr struct {
 
 // BadExpr represents an invalid expression.
 type BadExpr struct {
-	From, To scan.Position
+	From, To scanner.Position
 }
 
 // Affix defines what type of unary expression it is.
@@ -316,12 +320,12 @@ type ExprStmt struct {
 
 // BadStmt represents an invalid statement.
 type BadStmt struct {
-	From, To scan.Position
+	From, To scanner.Position
 }
 
 // Ident represents an identifier.
 type Ident struct {
-	Pos  scan.Position
+	Pos  scanner.Position
 	Name string
 }
 
@@ -348,7 +352,7 @@ type Prog struct {
 	Decls []Decl
 }
 
-func spanText(pos scan.Position, text string) scan.Span {
+func spanText(pos scanner.Position, text string) scan.Span {
 	n, m := pos, pos
 	m.Offset += len(text)
 	m.Column += len(text)
@@ -407,7 +411,7 @@ func (d *ConstDecl) Span() scan.Span {
 
 func (d *VarDecl) Span() scan.Span {
 	var span [3]scan.Span
-	var n, m scan.Position
+	var n, m scanner.Position
 
 	if d.Storage != nil {
 		span[0] = d.Storage.Span()

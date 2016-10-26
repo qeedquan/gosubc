@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+	"text/scanner"
 
 	"subc/ast"
 	"subc/constant"
@@ -41,7 +42,7 @@ type operand struct {
 	val  constant.Value
 }
 
-func (x *operand) pos() scan.Position {
+func (x *operand) pos() scanner.Position {
 	if x.expr == nil {
 		return scan.NoPos
 	}

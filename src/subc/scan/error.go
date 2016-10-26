@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"text/scanner"
 )
 
 // ErrorMessage is a struct that contains
 // the error message and whether or not if it is critical.
 type ErrorMessage struct {
-	Pos  Position
+	Pos  scanner.Position
 	Text string
 	Soft bool
 }

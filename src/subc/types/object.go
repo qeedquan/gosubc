@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+	"text/scanner"
 
 	"subc/constant"
 	"subc/scan"
@@ -10,24 +11,24 @@ import (
 
 // Object represents a type checked object.
 type Object interface {
-	Parent() *Scope                // returns the parent scope of the object is in
-	Pos() scan.Position            // the position of the object in the source code
-	Name() string                  // the name of the object
-	Type() Type                    // the type of the object
-	String() string                // the string of the object
-	setParent(parent *Scope)       // set the parent scope
-	setScopePos(pos scan.Position) // set the scope information
-	scopePos() scan.Position       // get the scope position
+	Parent() *Scope                   // returns the parent scope of the object is in
+	Pos() scanner.Position            // the position of the object in the source code
+	Name() string                     // the name of the object
+	Type() Type                       // the type of the object
+	String() string                   // the string of the object
+	setParent(parent *Scope)          // set the parent scope
+	setScopePos(pos scanner.Position) // set the scope information
+	scopePos() scanner.Position       // get the scope position
 }
 
 // object provides a common base for all
 // other objects to embed.
 type object struct {
 	parent    *Scope
-	pos       scan.Position
+	pos       scanner.Position
 	name      string
 	typ       Type
-	scopePos_ scan.Position
+	scopePos_ scanner.Position
 }
 
 // Func represents a function.
@@ -70,17 +71,17 @@ type TypeName struct {
 }
 
 // NewTypeName creates a type name object.
-func NewTypeName(pos scan.Position, name string, typ Type) *TypeName {
+func NewTypeName(pos scanner.Position, name string, typ Type) *TypeName {
 	return &TypeName{object{nil, pos, name, typ, scan.NoPos}}
 }
 
 // NewField creates a new field inside a record declaration object.
-func NewField(pos scan.Position, name string, typ Type) *Var {
+func NewField(pos scanner.Position, name string, typ Type) *Var {
 	return &Var{object: object{nil, pos, name, typ, scan.NoPos}}
 }
 
 // NewFunc creates a new function declaration.
-func NewFunc(pos scan.Position, storage Storage, name string, sig *Signature) *Func {
+func NewFunc(pos scanner.Position, storage Storage, name string, sig *Signature) *Func {
 	var typ Type
 	if sig != nil {
 		typ = sig
@@ -95,17 +96,17 @@ func NewFwrd(name string, objs ...Object) *Fwrd {
 }
 
 // NewConst creates a new constant declaration.
-func NewConst(pos scan.Position, name string, typ Type, val constant.Value) *Const {
+func NewConst(pos scanner.Position, name string, typ Type, val constant.Value) *Const {
 	return &Const{object: object{nil, pos, name, typ, scan.NoPos}, val: val}
 }
 
 // NewVar creates a new variable declaration.
-func NewVar(pos scan.Position, storage Storage, name string, typ Type, val constant.Value) *Var {
+func NewVar(pos scanner.Position, storage Storage, name string, typ Type, val constant.Value) *Var {
 	return &Var{object: object{nil, pos, name, typ, scan.NoPos}, storage: storage, val: val}
 }
 
 // NewLabel creates a new label declaration.
-func NewLabel(pos scan.Position, name string) *Label {
+func NewLabel(pos scanner.Position, name string) *Label {
 	return &Label{object: object{nil, pos, name, nil, scan.NoPos}}
 }
 
@@ -114,13 +115,13 @@ func (obj *Func) Storage() Storage { return obj.storage }
 func (obj *Var) Storage() Storage      { return obj.storage }
 func (obj *Var) Value() constant.Value { return obj.val }
 
-func (obj *object) Parent() *Scope                { return obj.parent }
-func (obj *object) Pos() scan.Position            { return obj.pos }
-func (obj *object) Name() string                  { return obj.name }
-func (obj *object) Type() Type                    { return obj.typ }
-func (obj *object) setParent(parent *Scope)       { obj.parent = parent }
-func (obj *object) setScopePos(pos scan.Position) { obj.scopePos_ = pos }
-func (obj *object) scopePos() scan.Position       { return obj.scopePos_ }
+func (obj *object) Parent() *Scope                   { return obj.parent }
+func (obj *object) Pos() scanner.Position            { return obj.pos }
+func (obj *object) Name() string                     { return obj.name }
+func (obj *object) Type() Type                       { return obj.typ }
+func (obj *object) setParent(parent *Scope)          { obj.parent = parent }
+func (obj *object) setScopePos(pos scanner.Position) { obj.scopePos_ = pos }
+func (obj *object) scopePos() scanner.Position       { return obj.scopePos_ }
 
 // ObjectString returns a pretty-printed version of an object.
 func ObjectString(obj Object) string {

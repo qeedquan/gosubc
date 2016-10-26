@@ -1,6 +1,8 @@
 package types
 
 import (
+	"text/scanner"
+
 	"subc/ast"
 	"subc/scan"
 )
@@ -24,7 +26,7 @@ func (c *checker) recordDecl(d *ast.RecordDecl) {
 
 	var fset objset
 	var fields []*Var
-	add := func(field *ast.FieldDecl, ident *ast.Ident, typ Type, pos scan.Position) {
+	add := func(field *ast.FieldDecl, ident *ast.Ident, typ Type, pos scanner.Position) {
 		name := ident.Name
 		fld := NewField(pos, name, typ)
 		if c.declareInSet(&fset, pos, fld) {
@@ -215,7 +217,7 @@ func (c *checker) checkFwrd(x *Fwrd) {
 
 // declare declares an object in a name space, it will error out
 // if there is an existing object with the same name in the same scope and namespace.
-func (c *checker) declare(ns Namespace, scope *Scope, id *ast.Ident, obj Object, pos scan.Position) {
+func (c *checker) declare(ns Namespace, scope *Scope, id *ast.Ident, obj Object, pos scanner.Position) {
 	if alt := scope.Insert(ns, obj); alt != nil {
 		if ns == Fwd {
 			x := alt.(*Fwrd)

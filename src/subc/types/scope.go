@@ -3,6 +3,7 @@ package types
 import (
 	"subc/ast"
 	"subc/scan"
+	"text/scanner"
 )
 
 // Namespace represents a namespace for the language
@@ -61,7 +62,7 @@ func (s *Scope) Lookup(ns Namespace, name string) Object {
 }
 
 // LookupParent will recursively look up to the top level for the object name.
-func (s *Scope) LookupParent(ns Namespace, name string, pos scan.Position) (*Scope, Object) {
+func (s *Scope) LookupParent(ns Namespace, name string, pos scanner.Position) (*Scope, Object) {
 	for ; s != nil; s = s.parent {
 		if obj := s.elems[ns][name]; obj != nil && (!pos.IsValid() || obj.scopePos().Offset <= pos.Offset) {
 			return s, obj

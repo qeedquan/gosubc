@@ -1,41 +1,26 @@
 package scan
 
-import "fmt"
-
-// Position stores the position of a token with respect to the source file.
-type Position struct {
-	Name   string
-	Offset int
-	Line   int
-	Column int
-}
+import (
+	"fmt"
+	"text/scanner"
+)
 
 // Span stores the beginning and end position boundary of a token or block.
 type Span struct {
-	Start Position
-	End   Position
+	Start scanner.Position
+	End   scanner.Position
 }
 
 func (s Span) IsValid() bool { return s != NoSpan }
 
 var (
-	NoSpan = Span{}     // A zero value for span, considered to be invalid span.
-	NoPos  = Position{} // A zero value for position, considered to be an invalid position.
+	NoSpan = Span{}             // A zero value for span, considered to be invalid span.
+	NoPos  = scanner.Position{} // A zero value for position, considered to be an invalid position.
 )
-
-func (p Position) String() string {
-	name := p.Name
-	if name == "" {
-		name = "-"
-	}
-	return fmt.Sprintf("%v:%v:%v", name, p.Line, p.Column)
-}
-
-func (p Position) IsValid() bool { return p != NoPos }
 
 type Token struct {
 	Type Type
-	Pos  Position
+	Pos  scanner.Position
 	Text string
 }
 
@@ -125,6 +110,7 @@ const (
 	Lbrace
 	Lbrack
 	Lparen
+	Noreturn
 	Not
 	Qmark
 	Rbrace
@@ -137,6 +123,7 @@ const (
 	Static
 	Struct
 	Switch
+	Thread_local
 	Typedef
 	Negate
 	Union
@@ -174,62 +161,64 @@ var types = [...]string{
 	Land:  "&&",
 	Lor:   "||",
 
-	Arrow:    "<-",
-	AndEq:    "&=",
-	XorEq:    "^=",
-	LshEq:    "<<=",
-	MinusEq:  "-=",
-	ModEq:    "%=",
-	OrEq:     "|=",
-	PlusEq:   "+=",
-	RshEq:    ">>=",
-	DivEq:    "/=",
-	MulEq:    "*=",
-	Assign:   "=",
-	Auto:     "auto",
-	Break:    "break",
-	Bool:     "_Bool",
-	Case:     "case",
-	Char:     "char",
-	Colon:    ":",
-	Comma:    ",",
-	Const:    "const",
-	Continue: "continue",
-	Dec:      "--",
-	Default:  "default",
-	Do:       "do",
-	Dot:      ".",
-	Ellipsis: "...",
-	Else:     "else",
-	Enum:     "enum",
-	Extern:   "extern",
-	For:      "for",
-	Goto:     "goto",
-	Ident:    "ident",
-	If:       "if",
-	Inc:      "++",
-	Int:      "int",
-	Lbrace:   "{",
-	Lbrack:   "[",
-	Lparen:   "(",
-	Not:      "!",
-	Qmark:    "?",
-	Rbrace:   "}",
-	Rbrack:   "]",
-	Register: "register",
-	Return:   "return",
-	Rparen:   ")",
-	Semi:     ";",
-	Sizeof:   "sizeof",
-	Static:   "static",
-	Struct:   "struct",
-	Switch:   "switch",
-	Typedef:  "typedef",
-	Negate:   "~",
-	Union:    "union",
-	Void:     "void",
-	Volatile: "volatile",
-	While:    "while",
+	Arrow:        "<-",
+	AndEq:        "&=",
+	XorEq:        "^=",
+	LshEq:        "<<=",
+	MinusEq:      "-=",
+	ModEq:        "%=",
+	OrEq:         "|=",
+	PlusEq:       "+=",
+	RshEq:        ">>=",
+	DivEq:        "/=",
+	MulEq:        "*=",
+	Assign:       "=",
+	Auto:         "auto",
+	Break:        "break",
+	Bool:         "_Bool",
+	Case:         "case",
+	Char:         "char",
+	Colon:        ":",
+	Comma:        ",",
+	Const:        "const",
+	Continue:     "continue",
+	Dec:          "--",
+	Default:      "default",
+	Do:           "do",
+	Dot:          ".",
+	Ellipsis:     "...",
+	Else:         "else",
+	Enum:         "enum",
+	Extern:       "extern",
+	For:          "for",
+	Goto:         "goto",
+	Ident:        "ident",
+	If:           "if",
+	Inc:          "++",
+	Int:          "int",
+	Lbrace:       "{",
+	Lbrack:       "[",
+	Lparen:       "(",
+	Noreturn:     "_Noreturn",
+	Not:          "!",
+	Qmark:        "?",
+	Rbrace:       "}",
+	Rbrack:       "]",
+	Register:     "register",
+	Return:       "return",
+	Rparen:       ")",
+	Semi:         ";",
+	Sizeof:       "sizeof",
+	Static:       "static",
+	Struct:       "struct",
+	Switch:       "switch",
+	Thread_local: "_Thread_local",
+	Typedef:      "typedef",
+	Negate:       "~",
+	Union:        "union",
+	Void:         "void",
+	Volatile:     "volatile",
+	While:        "while",
 
 	Rune:   "rune",
 	Number: "number",

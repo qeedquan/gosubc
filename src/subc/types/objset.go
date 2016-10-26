@@ -1,8 +1,6 @@
 package types
 
-import (
-	"subc/scan"
-)
+import "text/scanner"
 
 // objset is used to see if there are redeclarations of variables.
 type objset map[string]Object
@@ -19,7 +17,7 @@ func (s *objset) insert(obj Object) Object {
 	return nil
 }
 
-func (c *checker) declareInSet(oset *objset, pos scan.Position, obj Object) bool {
+func (c *checker) declareInSet(oset *objset, pos scanner.Position, obj Object) bool {
 	if alt := oset.insert(obj); alt != nil {
 		c.errorf(pos, "%s redeclared", obj.Name())
 		c.reportAltDecl(alt)

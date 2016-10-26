@@ -2,6 +2,7 @@ package types
 
 import (
 	"strconv"
+	"text/scanner"
 
 	"subc/ast"
 	"subc/constant"
@@ -141,7 +142,7 @@ func (c *checker) stmt(ctx stmtContext, s ast.Stmt) {
 		inner |= breakOk
 		c.expr(&x, s.Tag)
 
-		sawCases := make(map[constant.Value]scan.Position)
+		sawCases := make(map[constant.Value]scanner.Position)
 		defaultPos := scan.NoPos
 		for _, n := range s.Body.Stmt {
 			xpos := n.Span().Start

@@ -385,8 +385,10 @@ func lexWord(l *Scanner) stateFn {
 	var keywords = map[string]Type{
 		"auto":     Auto,
 		"break":    Break,
+		"_Bool":    Bool,
 		"case":     Case,
 		"char":     Char,
+		"const":    Const,
 		"continue": Continue,
 		"default":  Default,
 		"do":       Do,
@@ -403,6 +405,7 @@ func lexWord(l *Scanner) stateFn {
 		"static":   Static,
 		"struct":   Struct,
 		"switch":   Switch,
+		"typedef":  Typedef,
 		"union":    Union,
 		"void":     Void,
 		"volatile": Volatile,

@@ -101,10 +101,12 @@ const (
 	Assign
 	Auto
 	Break
+	Bool
 	Case
 	Char
 	Colon
 	Comma
+	Const
 	Continue
 	Dec
 	Default
@@ -135,6 +137,7 @@ const (
 	Static
 	Struct
 	Switch
+	Typedef
 	Negate
 	Union
 	Void
@@ -185,10 +188,12 @@ var types = [...]string{
 	Assign:   "=",
 	Auto:     "auto",
 	Break:    "break",
+	Bool:     "_Bool",
 	Case:     "case",
 	Char:     "char",
 	Colon:    ":",
 	Comma:    ",",
+	Const:    "const",
 	Continue: "continue",
 	Dec:      "--",
 	Default:  "default",
@@ -219,6 +224,7 @@ var types = [...]string{
 	Static:   "static",
 	Struct:   "struct",
 	Switch:   "switch",
+	Typedef:  "typedef",
 	Negate:   "~",
 	Union:    "union",
 	Void:     "void",

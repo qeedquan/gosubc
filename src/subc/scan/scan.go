@@ -384,9 +384,13 @@ func lexNumber(l *Scanner) stateFn {
 // lexWord scans keywords.
 func lexWord(l *Scanner) stateFn {
 	var keywords = map[string]Type{
+		"_Bool":         Bool,
+		"_Complex":      Complex,
+		"_Noreturn":     Noreturn,
+		"_Thread_local": Thread_local,
+
 		"auto":     Auto,
 		"break":    Break,
-		"_Bool":    Bool,
 		"case":     Case,
 		"char":     Char,
 		"const":    Const,

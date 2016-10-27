@@ -86,7 +86,6 @@ const (
 	Assign
 	Auto
 	Break
-	Bool
 	Case
 	Char
 	Colon
@@ -110,7 +109,6 @@ const (
 	Lbrace
 	Lbrack
 	Lparen
-	Noreturn
 	Not
 	Qmark
 	Rbrace
@@ -123,13 +121,17 @@ const (
 	Static
 	Struct
 	Switch
-	Thread_local
 	Typedef
 	Negate
 	Union
 	Void
 	Volatile
 	While
+
+	Bool
+	Complex
+	Noreturn
+	Thread_local
 
 	Number
 	Rune
@@ -161,64 +163,66 @@ var types = [...]string{
 	Land:  "&&",
 	Lor:   "||",
 
-	Arrow:        "<-",
-	AndEq:        "&=",
-	XorEq:        "^=",
-	LshEq:        "<<=",
-	MinusEq:      "-=",
-	ModEq:        "%=",
-	OrEq:         "|=",
-	PlusEq:       "+=",
-	RshEq:        ">>=",
-	DivEq:        "/=",
-	MulEq:        "*=",
-	Assign:       "=",
-	Auto:         "auto",
-	Break:        "break",
+	Arrow:    "<-",
+	AndEq:    "&=",
+	XorEq:    "^=",
+	LshEq:    "<<=",
+	MinusEq:  "-=",
+	ModEq:    "%=",
+	OrEq:     "|=",
+	PlusEq:   "+=",
+	RshEq:    ">>=",
+	DivEq:    "/=",
+	MulEq:    "*=",
+	Assign:   "=",
+	Auto:     "auto",
+	Break:    "break",
+	Case:     "case",
+	Char:     "char",
+	Colon:    ":",
+	Comma:    ",",
+	Const:    "const",
+	Continue: "continue",
+	Dec:      "--",
+	Default:  "default",
+	Do:       "do",
+	Dot:      ".",
+	Ellipsis: "...",
+	Else:     "else",
+	Enum:     "enum",
+	Extern:   "extern",
+	For:      "for",
+	Goto:     "goto",
+	Ident:    "ident",
+	If:       "if",
+	Inc:      "++",
+	Int:      "int",
+	Lbrace:   "{",
+	Lbrack:   "[",
+	Lparen:   "(",
+	Not:      "!",
+	Qmark:    "?",
+	Rbrace:   "}",
+	Rbrack:   "]",
+	Register: "register",
+	Return:   "return",
+	Rparen:   ")",
+	Semi:     ";",
+	Sizeof:   "sizeof",
+	Static:   "static",
+	Struct:   "struct",
+	Switch:   "switch",
+	Typedef:  "typedef",
+	Negate:   "~",
+	Union:    "union",
+	Void:     "void",
+	Volatile: "volatile",
+	While:    "while",
+
 	Bool:         "_Bool",
-	Case:         "case",
-	Char:         "char",
-	Colon:        ":",
-	Comma:        ",",
-	Const:        "const",
-	Continue:     "continue",
-	Dec:          "--",
-	Default:      "default",
-	Do:           "do",
-	Dot:          ".",
-	Ellipsis:     "...",
-	Else:         "else",
-	Enum:         "enum",
-	Extern:       "extern",
-	For:          "for",
-	Goto:         "goto",
-	Ident:        "ident",
-	If:           "if",
-	Inc:          "++",
-	Int:          "int",
-	Lbrace:       "{",
-	Lbrack:       "[",
-	Lparen:       "(",
+	Complex:      "_Complex",
 	Noreturn:     "_Noreturn",
-	Not:          "!",
-	Qmark:        "?",
-	Rbrace:       "}",
-	Rbrack:       "]",
-	Register:     "register",
-	Return:       "return",
-	Rparen:       ")",
-	Semi:         ";",
-	Sizeof:       "sizeof",
-	Static:       "static",
-	Struct:       "struct",
-	Switch:       "switch",
 	Thread_local: "_Thread_local",
-	Typedef:      "typedef",
-	Negate:       "~",
-	Union:        "union",
-	Void:         "void",
-	Volatile:     "volatile",
-	While:        "while",
 
 	Rune:   "rune",
 	Number: "number",

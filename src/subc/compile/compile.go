@@ -11,7 +11,7 @@ import (
 	"subc/types"
 )
 
-// Config provide options for how the compiler will act when comiling.
+// Config provide options for how the compiler will act when compiling.
 type Config struct {
 	Emitter   *arch.Emitter // the code emitter for the compiler, needed for generating code for an architecture
 	MaxErrors int           // max number of errors before bailing out

@@ -108,6 +108,7 @@ const (
 	Int
 	Lbrace
 	Lbrack
+	Long
 	Lparen
 	Not
 	Qmark
@@ -117,6 +118,7 @@ const (
 	Return
 	Rparen
 	Semi
+	Short
 	Sizeof
 	Static
 	Struct
@@ -124,6 +126,7 @@ const (
 	Typedef
 	Negate
 	Union
+	Unsigned
 	Void
 	Volatile
 	While
@@ -199,6 +202,7 @@ var types = [...]string{
 	Int:      "int",
 	Lbrace:   "{",
 	Lbrack:   "[",
+	Long:     "long",
 	Lparen:   "(",
 	Not:      "!",
 	Qmark:    "?",
@@ -209,12 +213,14 @@ var types = [...]string{
 	Rparen:   ")",
 	Semi:     ";",
 	Sizeof:   "sizeof",
+	Short:    "short",
 	Static:   "static",
 	Struct:   "struct",
 	Switch:   "switch",
 	Typedef:  "typedef",
 	Negate:   "~",
 	Union:    "union",
+	Unsigned: "unsigned",
 	Void:     "void",
 	Volatile: "volatile",
 	While:    "while",

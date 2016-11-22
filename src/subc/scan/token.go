@@ -96,10 +96,12 @@ const (
 	Default
 	Do
 	Dot
+	Double
 	Ellipsis
 	Else
 	Enum
 	Extern
+	Float
 	For
 	Goto
 	Ident
@@ -190,10 +192,12 @@ var types = [...]string{
 	Default:  "default",
 	Do:       "do",
 	Dot:      ".",
+	Double:   "double",
 	Ellipsis: "...",
 	Else:     "else",
 	Enum:     "enum",
 	Extern:   "extern",
+	Float:    "float",
 	For:      "for",
 	Goto:     "goto",
 	Ident:    "ident",

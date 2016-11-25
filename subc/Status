@@ -2,6 +2,13 @@
 
 	SUBC BUILD STATUS
 
+	FreeBSD/x86-64 10.1-RELEASE, clang 3.4.1, SubC 20161124
+		triple test	passed
+		ptest		passed
+		systest		passed
+		libtest		passed
+		signal()	works
+
 	NetBSD/x86-64 7.0.1-RELEASE, gcc 4.8.4, SubC 20160726
 		triple test	passed
 		ptest		passed
@@ -15,13 +22,6 @@
 		systest         passed                                          
 		libtest         passed                                          
 		signal()        works                                           
-
-	FreeBSD/x86-64 10.1-RELEASE, clang 3.4.1, SubC 20160726
-		triple test	passed
-		ptest		passed
-		systest		passed
-		libtest		passed
-		signal()	works
 
 	FreeBSD/386 8.2-RELEASE, gcc 4.2.1, SubC 20140525
 		triple test	passed

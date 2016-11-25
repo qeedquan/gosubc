@@ -175,7 +175,6 @@ void queue(int type, int val, char *name) {
 	Q_type = type;
 	Q_val = val;
 	if (name) copyname(Q_name, name);
-	Q_cmp = cnone;
 }
 
 void genaddr(int y) {
@@ -373,8 +372,7 @@ void commit_cmp(void) {
 }
 
 void queue_cmp(int op) {
-	if (Q_bool != bnone) commit_bool();
-	if (Q_cmp != cnone) commit_cmp();
+	commit();
 	Q_cmp = op;
 }
 

@@ -1,5 +1,5 @@
 /*
- *	NMH's Simple C Compiler, 2014
+ *	NMH's Simple C Compiler, 2014--2016
  *	Syntax tree construction
  */
 
@@ -283,6 +283,7 @@ static void emittree1(node *a) {
 	case OP_LTEQ:	/* fallthru */
 	case OP_GTEQ:	emittree1(a->left);
 			emittree1(a->right);
+			commit();
 			ptr = !inttype(a->args[0]);
 			switch(a->op) {
 			case OP_EQUAL:	queue_cmp(equal); break;
@@ -309,6 +310,7 @@ static void emittree1(node *a) {
 	case OP_PLUS:	/* fallthru */
 	case OP_ADD:	emittree1(a->left);
 			emittree1(a->right);
+			commit();
 			switch(a->op) {
 			case OP_LSHIFT:	genshl(1); break;
 			case OP_RSHIFT:	genshr(1); break;

@@ -186,6 +186,7 @@ func (c *compiler) tree(n *node) {
 	case opEq, opNeq, opLt, opGt, opLeq, opGeq:
 		c.tree(n.left)
 		c.tree(n.right)
+		c.cg.Commit()
 		x, y, z, w := arch.Below, arch.Above, arch.BelowEqual, arch.AboveEqual
 		if intTypes(lv.Btype) {
 			x, y, z, w = arch.Less, arch.Greater, arch.LessEqual, arch.GreaterEqual
@@ -208,6 +209,7 @@ func (c *compiler) tree(n *node) {
 	case opMod, opLsh, opRsh, opDiv, opBinAnd, opBinOr, opBinXor, opMul, opSub, opPlus, opAdd:
 		c.tree(n.left)
 		c.tree(n.right)
+		c.cg.Commit()
 		switch n.op {
 		case opLsh:
 			c.cg.Shl(true)

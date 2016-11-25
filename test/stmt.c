@@ -1,5 +1,5 @@
 /*
- *	NMH's Simple C Compiler, 2011--2013
+ *	NMH's Simple C Compiler, 2011--2016
  *	Statement parser
  */
 
@@ -325,7 +325,7 @@ static void stmt(void) {
 	case SEMI:	Token = scan(); break;
 	case DEFAULT:	wrong_ctx(DEFAULT); break;
 	case CASE:	wrong_ctx(CASE); break;
-	default:	expr(lv, 0); semi(); clear(1); break;
+	default:	expr(lv, 0); semi(); commit(); break;
 	}
 	clear(1);
 }

@@ -1,5 +1,9 @@
 
-	A list of unresolved bugs submitted by Quan Tran in 10/2015.
+
+	UNRESOLVED BUGS
+
+
+	(1) Submitted by Quan Tran in 10/2015
 
 	Thanks a lot!
 
@@ -36,4 +40,26 @@
 	structs: e.g.:
 
 	struct file f; !f;
+
+
+	(2) Submitted by Volkmar Klatt in 08/2016
+
+	Prints wrong result (0) and core-dumps:
+
+	#include <stdio.h>
+	int main() {
+	  int g = 2;
+	  g = (1 < (0, 1));
+	  printf("%d\n", g);
+	  return 0;
+	}
+
+	Prints wrong result (0):
+	
+	#include <stdio.h>
+	int main() {
+	  int i = 2;
+	  printf("%d\n", (4 || 3) + (i > 1));
+	  return 0;
+	}
 

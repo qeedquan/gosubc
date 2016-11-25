@@ -293,12 +293,7 @@ func (c *Emitter) Commit() {
 
 // QueueCmp queues a comparison operator.
 func (c *Emitter) QueueCmp(op int) {
-	if c.Q.Bool != Bnone {
-		c.commitBool()
-	}
-	if c.Q.Cmp != Cnone {
-		c.commitCmp()
-	}
+	c.commit()
 	c.Q.Cmp = op
 }
 
@@ -310,7 +305,6 @@ func (c *Emitter) Queue(typ, value int, name string) {
 	if name != "" {
 		c.Q.Name = name
 	}
-	c.Q.Cmp = Cnone
 }
 
 // Addr emits code for queuing up addresses.

@@ -293,7 +293,7 @@ func (c *Emitter) Commit() {
 
 // QueueCmp queues a comparison operator.
 func (c *Emitter) QueueCmp(op int) {
-	c.commit()
+	c.Commit()
 	c.Q.Cmp = op
 }
 

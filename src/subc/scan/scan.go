@@ -410,6 +410,7 @@ func lexWord(l *Scanner) stateFn {
 		"register": Register,
 		"return":   Return,
 		"short":    Short,
+		"signed":   Signed,
 		"sizeof":   Sizeof,
 		"static":   Static,
 		"struct":   Struct,

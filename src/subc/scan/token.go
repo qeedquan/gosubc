@@ -121,6 +121,7 @@ const (
 	Rparen
 	Semi
 	Short
+	Signed
 	Sizeof
 	Static
 	Struct

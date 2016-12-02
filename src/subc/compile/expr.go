@@ -254,6 +254,9 @@ func (c *compiler) binaryExpr(e *ast.BinaryExpr, lv *arch.LV) *node {
 
 	var lv2 arch.LV
 	n := c.exprInternal(e.X, lv)
+	if op == scan.Comma {
+		n = c.rvalue(n, lv)
+	}
 	m := c.rvalue(c.exprInternal(e.Y, &lv2), &lv2)
 
 	bop := binOp(op)

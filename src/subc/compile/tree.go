@@ -295,7 +295,6 @@ func (c *compiler) tree(n *node) {
 		}
 		c.cg.Clear(false)
 		c.tree(n.right)
-		c.cg.Clear(false)
 
 	case opComma:
 		c.tree(n.left)

@@ -1,5 +1,5 @@
 /*
- *	NMH's Simple C Compiler, 2011--2014
+ *	NMH's Simple C Compiler, 2011--2016
  *	Expression parser
  */
 
@@ -847,6 +847,7 @@ static node *exprlist(int *lv, int ckvoid) {
 
 	n = asgmnt(lv);
 	p = lv[LVPRIM];
+	if (COMMA == Token) n = rvalue(n, lv);
 	while (COMMA == Token) {
 		Token = scan();
 		n2 = asgmnt(lv);

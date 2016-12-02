@@ -1,5 +1,5 @@
 SNAP=	20140420
-REL=	20161124
+REL=	20161201
 ARC=	subc-$(SNAP).tgz
 DIST=	subc-$(REL).tgz
 

@@ -1,4 +1,6 @@
-2016-11-24 Fix: (x|1)|(x>1) would generate wrong code. Thanks again, Volkmar!
+2016-12-01 Fix: f(a[1] && a[0]) would generate wrong code. Thanks, Volkmar!
+2016-11-28 Fix: (a,1),2 would generate wrong code. (also by Volkmar)
+2016-11-24 Fix: (x|1)|(x>1) would generate wrong code. (also by Volkmar)
 2016-08-07 OpenBSD: not linking against crtbegin.o. Thanks, Volkmar Klatt!
 2016-07-26 Added NetBSD/386 port supplied by Minux. Thanks!
 2016-07-26 Applied signal() patch for NetBSD/x86-64. Thanks, Minux!

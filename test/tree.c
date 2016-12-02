@@ -265,7 +265,6 @@ static void emittree1(node *a) {
 				genbrfalse(a->args[0]);
 			clear(0);
 			emittree1(a->right);
-			clear(0);
 			break;
 	case OP_IFELSE:	emitcond(a->left, a->args[0]);
 			commit();

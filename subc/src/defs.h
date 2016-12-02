@@ -10,7 +10,7 @@
 #include "cg.h"
 #include "sys.h"
 
-#define VERSION		"2016-11-24"
+#define VERSION		"2016-12-01"
 
 #ifndef SCCDIR
  #define SCCDIR		"."

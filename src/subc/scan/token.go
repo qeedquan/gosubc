@@ -217,6 +217,7 @@ var types = [...]string{
 	Return:   "return",
 	Rparen:   ")",
 	Semi:     ";",
+	Signed:   "signed",
 	Sizeof:   "sizeof",
 	Short:    "short",
 	Static:   "static",

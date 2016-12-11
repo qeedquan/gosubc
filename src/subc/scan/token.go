@@ -107,6 +107,7 @@ const (
 	Ident
 	If
 	Inc
+	Inline
 	Int
 	Lbrace
 	Lbrack
@@ -211,6 +212,7 @@ var types = [...]string{
 	Ident:    "ident",
 	If:       "if",
 	Inc:      "++",
+	Inline:   "inline",
 	Int:      "int",
 	Lbrace:   "{",
 	Lbrack:   "[",

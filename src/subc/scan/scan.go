@@ -412,6 +412,7 @@ func lexWord(l *Scanner) stateFn {
 		"for":      For,
 		"goto":     Goto,
 		"if":       If,
+		"inline":   Inline,
 		"int":      Int,
 		"long":     Long,
 		"register": Register,

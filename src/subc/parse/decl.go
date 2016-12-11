@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"bytes"
 	"fmt"
 
 	"subc/ast"
@@ -229,6 +230,11 @@ func (p *parser) decl(storage *scan.Token, prim ast.Decl) (decls []ast.Decl) {
 				p.next()
 				d.Decls = p.localDecls()
 				d.Body = p.compound(&tok)
+				if p.conf.Predecl {
+					decl, stmt := p.preDecls(tok)
+					d.Decls = append(decl, d.Decls...)
+					d.Body.Stmt = append(stmt, d.Body.Stmt...)
+				}
 			} else {
 				p.expect(scan.Semi)
 			}
@@ -245,6 +251,41 @@ func (p *parser) decl(storage *scan.Token, prim ast.Decl) (decls []ast.Decl) {
 
 	p.expect(scan.Semi)
 	return
+}
+
+// preDecls pre-declares identifiers.
+func (p *parser) preDecls(tok scan.Token) (decl []ast.Decl, stmt []ast.Stmt) {
+	d, s := p.preDeclFunc(tok, "__func__")
+	decl = append(decl, d)
+	stmt = append(stmt, s...)
+
+	d, s = p.preDeclFunc(tok, "__FUNCTION__")
+	decl = append(decl, d)
+	stmt = append(stmt, s...)
+
+	return
+}
+
+// preDeclFunc pre-declares __func__ style identifiers
+func (p *parser) preDeclFunc(tok scan.Token, ident string) (ast.Decl, []ast.Stmt) {
+	fn := p.curFn.Name.Name
+	src := new(bytes.Buffer)
+	fmt.Fprintf(src, "void %s(void) {", fn)
+	fmt.Fprintf(src, "static char %s[%d];", ident, len(fn))
+	for i := 0; i < len(fn); i++ {
+		fmt.Fprintf(src, "%s[%d] = %d;", ident, i, fn[i])
+	}
+	fmt.Fprintf(src, "%s[%d] = 0;", ident, len(fn)+1)
+	fmt.Fprintf(src, "}")
+
+	scanner := scan.New(scan.DefaultConfig, tok.Pos.Filename, scan.StringReader(tok.Pos, src.String()))
+	prog, err := Parse(Config{recursive: true}, scanner)
+	if err != nil {
+		panic(err)
+	}
+
+	f := prog.Decls[0].(*ast.FuncDecl)
+	return f.Decls[0], f.Body.Stmt
 }
 
 /*

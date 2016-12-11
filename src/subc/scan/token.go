@@ -117,6 +117,7 @@ const (
 	Rbrace
 	Rbrack
 	Register
+	Restrict
 	Return
 	Rparen
 	Semi
@@ -134,9 +135,15 @@ const (
 	Volatile
 	While
 
+	Alignas
+	Alignof
+	Atomic
 	Bool
 	Complex
+	Generic
+	Imaginary
 	Noreturn
+	Static_assert
 	Thread_local
 
 	Number
@@ -214,6 +221,7 @@ var types = [...]string{
 	Rbrace:   "}",
 	Rbrack:   "]",
 	Register: "register",
+	Restrict: "restrict",
 	Return:   "return",
 	Rparen:   ")",
 	Semi:     ";",
@@ -231,10 +239,16 @@ var types = [...]string{
 	Volatile: "volatile",
 	While:    "while",
 
-	Bool:         "_Bool",
-	Complex:      "_Complex",
-	Noreturn:     "_Noreturn",
-	Thread_local: "_Thread_local",
+	Alignas:       "_Alignas",
+	Alignof:       "_Alignof",
+	Atomic:        "_Atomic",
+	Bool:          "_Bool",
+	Complex:       "_Complex",
+	Generic:       "_Generic",
+	Imaginary:     "_Imaginary",
+	Noreturn:      "_Noreturn",
+	Static_assert: "_Static_assert",
+	Thread_local:  "_Thread_local",
 
 	Rune:   "rune",
 	Number: "number",

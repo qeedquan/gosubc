@@ -17,9 +17,7 @@ The darwinamd64 and arm6 has not been tested and was just implemented by a trans
 There are some minor differences in this implementation of SubC and
 the official one. The differences are listed below:
 
-* __FILE__ and __LINE__ are supported
-
-* __TIME__ and __DATE__ are predefined in the preprocessor
+* __FILE__, __LINE__, __TIME__, __DATE__, __func__, __FUNCTION__ are supported
 
 * goto is supported, labels can be declared after local variable declarations.
 

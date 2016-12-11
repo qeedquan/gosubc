@@ -3,7 +3,7 @@
 export SCCROOT="$(pwd)/.."
 for i in *.c
 do
-    $SCCROOT/bin/scc -S $i > `basename $i .c`.S
+    $SCCROOT/bin/scc -compat -S $i > `basename $i .c`.S
 done
 
 cd $SCCROOT/subc/src/

@@ -71,5 +71,4 @@ func (c *compiler) top(prog *ast.Prog) {
 		}
 	}
 	c.cg.Postlude()
-
 }

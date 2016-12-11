@@ -38,6 +38,8 @@ var flags struct {
 	DumpTokens bool
 	DumpAST    bool
 	DumpTypes  bool
+
+	Compat bool
 }
 
 func init() {
@@ -63,6 +65,7 @@ func init() {
 	flag.BoolVar(&flags.DumpTokens, "dump-tokens", false, "dump lexical tokens for debugging")
 	flag.BoolVar(&flags.DumpAST, "dump-ast", false, "dump ast tree for debugging")
 	flag.BoolVar(&flags.DumpTypes, "dump-types", false, "dump types for debugging")
+	flag.BoolVar(&flags.Compat, "compat", false, "compatibility mode with the scc compiler")
 
 	flag.Usage = usage
 	flag.Parse()

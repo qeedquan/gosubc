@@ -10,7 +10,9 @@ import (
 
 // Config controls the behavior of the parser during parsing.
 type Config struct {
-	MaxErrors int // the number of errors before bailing out, if it is 0 or less then it will capture all errors
+	MaxErrors int  // the number of errors before bailing out, if it is 0 or less then it will capture all errors
+	Predecl   bool // inject pre-identified values into the parser while parsing
+	recursive bool // the parser is calling itself recursively, a flag to stop it from doing infinite recursion
 }
 
 // Parse parses a stream of token and builds an AST tree out of it.

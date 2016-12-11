@@ -95,12 +95,13 @@ const (
 
 // newReader returns a reader for a scanner to use.
 func newReader(name string, r Reader, cwd string) *reader {
+	pos := r.Pos()
 	return &reader{
 		Reader: r,
 		Position: scanner.Position{
 			Filename: name,
-			Line:     1,
-			Column:   1,
+			Line:     pos.Line,
+			Column:   pos.Column,
 		},
 		cwd: cwd,
 	}
@@ -384,10 +385,16 @@ func lexNumber(l *Scanner) stateFn {
 // lexWord scans keywords.
 func lexWord(l *Scanner) stateFn {
 	var keywords = map[string]Type{
-		"_Bool":         Bool,
-		"_Complex":      Complex,
-		"_Noreturn":     Noreturn,
-		"_Thread_local": Thread_local,
+		"_Alignas":       Alignas,
+		"_Alignof":       Alignof,
+		"_Atomic":        Atomic,
+		"_Bool":          Bool,
+		"_Complex":       Complex,
+		"_Generic":       Generic,
+		"_Imaginary":     Imaginary,
+		"_Noreturn":      Noreturn,
+		"_Static_assert": Static_assert,
+		"_Thread_local":  Thread_local,
 
 		"auto":     Auto,
 		"break":    Break,
@@ -408,6 +415,7 @@ func lexWord(l *Scanner) stateFn {
 		"int":      Int,
 		"long":     Long,
 		"register": Register,
+		"restrict": Restrict,
 		"return":   Return,
 		"short":    Short,
 		"signed":   Signed,
@@ -459,7 +467,7 @@ func (l *Scanner) expandMacro(macro string) bool {
 	c.ApplyPreprocessor = false
 	c.Macros = nil
 	c.scanRaw = true
-	p := New(c, "", nopCloser{strings.NewReader(macro)})
+	p := New(c, "", StringReader(scanner.Position{}, macro))
 
 	// Whenever we expand a macro, we will mark it "blue"
 	// to prevent infinite expansion. The expansion
@@ -485,7 +493,7 @@ func (l *Scanner) expandMacro(macro string) bool {
 			fixed = false
 			seen[t.Text] = true
 
-			q := New(c, "(macro)", nopCloser{strings.NewReader(s)})
+			q := New(c, "(macro)", StringReader(scanner.Position{}, s))
 			for t := range q.Tokens {
 				x = append(x, t)
 			}
@@ -498,14 +506,14 @@ func (l *Scanner) expandMacro(macro string) bool {
 		if fixed {
 			break
 		}
-		p = New(c, "", nopCloser{strings.NewReader(macro)})
+		p = New(c, "", StringReader(scanner.Position{}, macro))
 	}
 
 	// We started a separate scanner while expanding the text, now feed back
 	// the output to our scanner.
 	c.expandingMacro = true
 	c.scanRaw = false
-	p = New(c, fmt.Sprintf("%v (macro)", l.r.Filename), nopCloser{strings.NewReader(macro)})
+	p = New(c, fmt.Sprintf("%v (macro)", l.r.Filename), StringReader(scanner.Position{}, macro))
 	for t := range p.Tokens {
 		pos := l.emitPos
 		pos.Filename = t.Pos.Filename
@@ -849,7 +857,7 @@ func lexPreprocessor(l *Scanner) stateFn {
 	c.ScanComments = true
 	c.Macros = nil
 	c.scanRaw = true
-	p := New(c, l.r.Filename, nopCloser{strings.NewReader(line)})
+	p := New(c, l.r.Filename, StringReader(scanner.Position{}, line))
 	defer p.Close()
 
 	switch t := <-p.Tokens; t.Text {

@@ -170,6 +170,8 @@ func (p *printer) print(x reflect.Value) {
 		p.indent--
 		p.printf("}")
 
+	case reflect.Invalid:
+
 	default:
 		v := x.Interface()
 		switch v := v.(type) {

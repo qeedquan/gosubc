@@ -95,7 +95,11 @@ func newScanner(name string) (*scan.Scanner, error) {
 }
 
 func parseAndTypecheck(scanner *scan.Scanner, emitter *arch.Emitter) (*ast.Prog, *types.Info, error) {
-	parseConfig := parse.Config{MaxErrors: flags.MaxErrors}
+	predecl := true
+	if flags.Compat {
+		predecl = false
+	}
+	parseConfig := parse.Config{MaxErrors: flags.MaxErrors, Predecl: predecl}
 	prog, err := parse.Parse(parseConfig, scanner)
 	if err != nil {
 		return prog, nil, err

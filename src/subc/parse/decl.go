@@ -271,7 +271,7 @@ func (p *parser) preDeclFunc(tok scan.Token, ident string) (ast.Decl, []ast.Stmt
 	fn := p.curFn.Name.Name
 	src := new(bytes.Buffer)
 	fmt.Fprintf(src, "void %s(void) {", fn)
-	fmt.Fprintf(src, "static char %s[%d];", ident, len(fn))
+	fmt.Fprintf(src, "static char %s[%d];", ident, len(fn)+1)
 	for i := 0; i < len(fn); i++ {
 		fmt.Fprintf(src, "%s[%d] = %d;", ident, i, fn[i])
 	}

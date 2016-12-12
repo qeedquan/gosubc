@@ -155,7 +155,11 @@ func (l *Scanner) perrorf(force bool, format string, args ...interface{}) stateF
 	if !force && l.frozen(1) {
 		return lexAny
 	}
-	l.Tokens <- Token{Error, l.emitPos, fmt.Sprintf(format, args...)}
+	pos := l.emitPos
+	if l.r.LockedPos() {
+		pos = l.r.Pos()
+	}
+	l.Tokens <- Token{Error, pos, fmt.Sprintf(format, args...)}
 	return lexAny
 }
 
@@ -166,7 +170,11 @@ func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
 
 // emit emits a token down a channel.
 func (l *Scanner) emit(typ Type, text string) {
-	l.emitp(typ, l.emitPos, text)
+	pos := l.emitPos
+	if l.r.LockedPos() {
+		pos = l.r.Pos()
+	}
+	l.emitp(typ, pos, text)
 }
 
 // emitp emits a token down a channel if we are not in a disabled macro expansion.
@@ -468,7 +476,7 @@ func (l *Scanner) expandMacro(macro string) bool {
 	c.ApplyPreprocessor = false
 	c.Macros = nil
 	c.scanRaw = true
-	p := New(c, "", StringReader(scanner.Position{}, macro))
+	p := New(c, "", StringReader(scanner.Position{}, macro, false))
 
 	// Whenever we expand a macro, we will mark it "blue"
 	// to prevent infinite expansion. The expansion
@@ -494,7 +502,7 @@ func (l *Scanner) expandMacro(macro string) bool {
 			fixed = false
 			seen[t.Text] = true
 
-			q := New(c, "(macro)", StringReader(scanner.Position{}, s))
+			q := New(c, "(macro)", StringReader(scanner.Position{}, s, false))
 			for t := range q.Tokens {
 				x = append(x, t)
 			}
@@ -507,14 +515,14 @@ func (l *Scanner) expandMacro(macro string) bool {
 		if fixed {
 			break
 		}
-		p = New(c, "", StringReader(scanner.Position{}, macro))
+		p = New(c, "", StringReader(scanner.Position{}, macro, false))
 	}
 
 	// We started a separate scanner while expanding the text, now feed back
 	// the output to our scanner.
 	c.expandingMacro = true
 	c.scanRaw = false
-	p = New(c, fmt.Sprintf("%v (macro)", l.r.Filename), StringReader(scanner.Position{}, macro))
+	p = New(c, fmt.Sprintf("%v (macro)", l.r.Filename), StringReader(scanner.Position{}, macro, false))
 	for t := range p.Tokens {
 		pos := l.emitPos
 		pos.Filename = t.Pos.Filename
@@ -858,7 +866,7 @@ func lexPreprocessor(l *Scanner) stateFn {
 	c.ScanComments = true
 	c.Macros = nil
 	c.scanRaw = true
-	p := New(c, l.r.Filename, StringReader(scanner.Position{}, line))
+	p := New(c, l.r.Filename, StringReader(scanner.Position{}, line, false))
 	defer p.Close()
 
 	switch t := <-p.Tokens; t.Text {

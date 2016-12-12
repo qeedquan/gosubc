@@ -278,7 +278,7 @@ func (p *parser) preDeclFunc(tok scan.Token, ident string) (ast.Decl, []ast.Stmt
 	fmt.Fprintf(src, "%s[%d] = 0;", ident, len(fn)+1)
 	fmt.Fprintf(src, "}")
 
-	scanner := scan.New(scan.DefaultConfig, tok.Pos.Filename, scan.StringReader(tok.Pos, src.String()))
+	scanner := scan.New(scan.DefaultConfig, tok.Pos.Filename, scan.StringReader(tok.Pos, src.String(), true))
 	prog, err := Parse(Config{recursive: true}, scanner)
 	if err != nil {
 		panic(err)

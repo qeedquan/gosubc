@@ -15,6 +15,7 @@ type Reader interface {
 	io.ByteReader
 	io.Closer
 	Pos() scanner.Position
+	LockedPos() bool
 }
 
 // Loader is an interface for opening files that are used
@@ -39,6 +40,8 @@ func (f *file) Pos() scanner.Position {
 	}
 }
 
+func (f *file) LockedPos() bool { return false }
+
 func (fileLoader) Open(name string) (Reader, error) {
 	f, err := os.Open(name)
 	if err != nil {
@@ -56,21 +59,23 @@ func (fileLoader) Open(name string) (Reader, error) {
 
 type stringReader struct {
 	io.ByteReader
-	pos scanner.Position
+	pos       scanner.Position
+	lockedPos bool
 }
 
 func (s stringReader) Pos() scanner.Position { return s.pos }
+func (s stringReader) LockedPos() bool       { return s.lockedPos }
 func (stringReader) Close() error            { return nil }
 
 // StringReader returns a reader out of a string.
-func StringReader(pos scanner.Position, src string) Reader {
+func StringReader(pos scanner.Position, src string, lockedPos bool) Reader {
 	if !pos.IsValid() {
 		pos = scanner.Position{
 			Line:   1,
 			Column: 1,
 		}
 	}
-	return stringReader{strings.NewReader(src), pos}
+	return stringReader{strings.NewReader(src), pos, lockedPos}
 }
 
 // OpenFile returns a reader made from opening a file on the filesystem.

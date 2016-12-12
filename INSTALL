@@ -10,3 +10,7 @@ it contains the libs and compiler code we will compile using our compiler.
 
 It will build the scc, our compiler in the bin/ dir and sccb, a compiler
 that compiled itself, just for fun.
+
+To use the compiler, you need to set the SCCROOT environment variable to point
+to the gosubc directory. The compiler will use this folder to look for the
+runtime libraries and standard headers.

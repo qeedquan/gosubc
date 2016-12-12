@@ -1,5 +1,5 @@
 SNAP=	20140420
-REL=	20161201
+REL=	20161212
 ARC=	subc-$(SNAP).tgz
 DIST=	subc-$(REL).tgz
 
@@ -13,7 +13,7 @@ sums:	clean
 	find . -type f | grep -v _sums | csum >_sums
 
 version:
-	vi src/defs.h Makefile README
+	vi src/defs.h Makefile Changes
 
 clean:
 	cd src && make clean

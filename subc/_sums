@@ -1,6 +1,6 @@
-23534 12 ./Changes
+60933 13 ./Changes
 48198 5 ./FAQ
-10027 1 ./Makefile
+21055 1 ./Makefile
 52379 6 ./NOTES-DOS
 25010 2 ./NOTES-WINDOWS
 8383 6 ./Porting
@@ -30,7 +30,7 @@
 17678 13 ./s86/s86-tools.txt
 9851 1 ./s86/arc.h
 34201 1 ./s86/obj.h
-31533 13 ./src/decl.c
+15819 13 ./src/decl.c
 555 1 ./src/error.c
 53681 17 ./src/expr.c
 1863 14 ./src/gen.c
@@ -43,7 +43,7 @@
 27839 3 ./src/cgen.h
 52598 2 ./src/data.h
 21149 4 ./src/decl.h
-38601 3 ./src/defs.h
+6734 3 ./src/defs.h
 59304 1 ./src/prec.h
 866 5 ./src/Makefile
 59786 1 ./src/include/stdlib.h

@@ -261,6 +261,8 @@ static int declarator(int pmtr, int scls, char *name, int *pprim, int *psize,
 	if (!pmtr && ASSIGN == Token) {
 		Token = scan();
 		*pval = constexpr();
+		if (PCHAR == *pprim)
+			*pval &= 0xff;
 		if (*pval && !inttype(*pprim))
 			error("non-zero pointer initialization", NULL);
 		*pinit = 1;

@@ -1,3 +1,4 @@
+2016-12-12 Fix: char c=-2; stored -2, but char is unsigned. (also by Volkmar)
 2016-12-01 Fix: f(a[1] && a[0]) would generate wrong code. Thanks, Volkmar!
 2016-11-28 Fix: (a,1),2 would generate wrong code. (also by Volkmar)
 2016-11-24 Fix: (x|1)|(x>1) would generate wrong code. (also by Volkmar)

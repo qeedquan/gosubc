@@ -37,7 +37,8 @@ func (p *parser) top() (decls []ast.Decl) {
 		decls = append(decls, d)
 	case scan.Struct, scan.Union:
 		decls = p.structDecl(storage)
-	case scan.Char, scan.Int, scan.Void:
+	case scan.Char, scan.Int, scan.Short, scan.Long, scan.Float,
+		scan.Double, scan.Complex, scan.Bool, scan.Void:
 		p.next()
 		decls = p.decl(storage, &ast.BasicType{Type: tok})
 	case scan.Ident:
@@ -522,7 +523,8 @@ func (p *parser) localDecls() []ast.Decl {
 // primType creates a basic type or a record type from token
 func (p *parser) primType(tok scan.Token) ast.Expr {
 	switch tok.Type {
-	case scan.Char, scan.Int, scan.Void:
+	case scan.Char, scan.Short, scan.Int, scan.Long, scan.Float,
+		scan.Double, scan.Complex, scan.Bool, scan.Void:
 		p.next()
 		return &ast.BasicType{Type: tok}
 

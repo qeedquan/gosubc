@@ -14,7 +14,8 @@ func isQualifier(tok scan.Type) bool {
 // isType returns whether or not a token is a valid type.
 func isType(tok scan.Type) bool {
 	switch tok {
-	case scan.Char, scan.Int, scan.Void, scan.Struct, scan.Union:
+	case scan.Char, scan.Short, scan.Int, scan.Long, scan.Float,
+		scan.Double, scan.Bool, scan.Complex, scan.Void, scan.Struct, scan.Union:
 		return true
 	}
 	return false
@@ -25,7 +26,8 @@ func isType(tok scan.Type) bool {
 func isLocalType(tok scan.Type) bool {
 	switch tok {
 	case scan.Auto, scan.Extern, scan.Register, scan.Static,
-		scan.Volatile, scan.Int, scan.Char, scan.Void, scan.Enum,
+		scan.Volatile, scan.Int, scan.Char, scan.Short, scan.Long,
+		scan.Float, scan.Double, scan.Bool, scan.Complex, scan.Void, scan.Enum,
 		scan.Struct, scan.Union:
 		return true
 	}

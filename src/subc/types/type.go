@@ -106,7 +106,13 @@ const (
 	Invalid BasicType = iota
 
 	Char
+	Short
 	Int
+	Long
+	Float
+	Double
+	Bool
+	Complex
 	Void
 
 	UntypedString
@@ -114,22 +120,30 @@ const (
 
 // Basic type information.
 const (
-	IsInteger BasicInfo = 1 << iota // integer type
+	IsBoolean BasicInfo = 1 << iota // boolean type
+	IsInteger                       // integer type
+	IsFloat                         // floating point type
+	IsComplex                       // complex type
 	IsString                        // a string
 	IsUntyped                       // untyped, mainly for literals
 	IsVoid                          // void type
 
-	IsNumeric = IsInteger            // an integer or pointer
-	IsBoolean = IsNumeric | IsString // number or string
+	IsNumeric = IsInteger // an integer or pointer
 )
 
 // Typ is an array containing all the basic types.
 var Typ = [...]*Basic{
 	Invalid: {Invalid, 0, "invalid type"},
 
-	Char: {Char, IsInteger, "char"},
-	Int:  {Int, IsInteger, "int"},
-	Void: {Void, IsVoid, "void"},
+	Bool:    {Bool, IsBoolean, "_Bool"},
+	Complex: {Complex, IsComplex, "_Complex"},
+	Char:    {Char, IsInteger, "char"},
+	Short:   {Char, IsInteger, "short"},
+	Int:     {Int, IsInteger, "int"},
+	Long:    {Int, IsInteger, "long"},
+	Float:   {Float, IsFloat, "float"},
+	Double:  {Double, IsFloat, "double"},
+	Void:    {Void, IsVoid, "void"},
 
 	UntypedString: {UntypedString, IsString | IsUntyped, "untyped string"},
 }

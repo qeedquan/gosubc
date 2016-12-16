@@ -118,6 +118,18 @@ func (c *checker) typExprInternal(e ast.Expr) Type {
 func (c *checker) typBasic(e *ast.BasicType) Type {
 	typ := Type(Typ[Invalid])
 	switch e.Type.Type {
+	case scan.Bool:
+		typ = Typ[Bool]
+	case scan.Short:
+		typ = Typ[Short]
+	case scan.Long:
+		typ = Typ[Long]
+	case scan.Float:
+		typ = Typ[Float]
+	case scan.Double:
+		typ = Typ[Double]
+	case scan.Complex:
+		typ = Typ[Complex]
 	case scan.Int:
 		typ = Typ[Int]
 	case scan.Char:

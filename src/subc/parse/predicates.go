@@ -5,7 +5,7 @@ import "subc/scan"
 // isQualifier returns if a token is a qualifier such as auto, register, static, etc.
 func isQualifier(tok scan.Type) bool {
 	switch tok {
-	case scan.Auto, scan.Register, scan.Static, scan.Volatile, scan.Extern:
+	case scan.Auto, scan.Register, scan.Static, scan.Volatile, scan.Restrict, scan.Extern:
 		return true
 	}
 	return false
@@ -26,7 +26,7 @@ func isType(tok scan.Type) bool {
 func isLocalType(tok scan.Type) bool {
 	switch tok {
 	case scan.Auto, scan.Extern, scan.Register, scan.Static,
-		scan.Volatile, scan.Int, scan.Char, scan.Short, scan.Long,
+		scan.Volatile, scan.Restrict, scan.Int, scan.Char, scan.Short, scan.Long,
 		scan.Float, scan.Double, scan.Bool, scan.Complex, scan.Void, scan.Enum,
 		scan.Struct, scan.Union:
 		return true

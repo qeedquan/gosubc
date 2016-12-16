@@ -138,7 +138,7 @@ var Typ = [...]*Basic{
 	Bool:    {Bool, IsBoolean, "_Bool"},
 	Complex: {Complex, IsComplex, "_Complex"},
 	Char:    {Char, IsInteger, "char"},
-	Short:   {Char, IsInteger, "short"},
+	Short:   {Short, IsInteger, "short"},
 	Int:     {Int, IsInteger, "int"},
 	Long:    {Int, IsInteger, "long"},
 	Float:   {Float, IsFloat, "float"},

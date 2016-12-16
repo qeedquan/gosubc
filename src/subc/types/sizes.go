@@ -82,10 +82,22 @@ func (s *StdSizes) Sizeof(T Type) int64 {
 	case *Basic:
 		k := t.typ
 		switch k {
+		case Bool:
+			return 1
 		case Char:
 			return 1
+		case Short:
+			return 2
 		case Int:
 			return s.WordSize
+		case Long:
+			return 8
+		case Float:
+			return 4
+		case Double:
+			return 8
+		case Complex:
+			return 16
 		}
 
 		if k == UntypedString {

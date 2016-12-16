@@ -253,7 +253,8 @@ func (p *parser) prefix() ast.Expr {
 
 func (p *parser) sizeof() ast.Expr {
 	switch tok := p.peek(); tok.Type {
-	case scan.Char, scan.Int, scan.Void, scan.Struct, scan.Union:
+	case scan.Bool, scan.Complex, scan.Char, scan.Short, scan.Int,
+		scan.Long, scan.Float, scan.Double, scan.Void, scan.Struct, scan.Union:
 		n := p.primType(tok)
 		if tok := p.peek(); tok.Type == scan.Mul {
 			star := &ast.StarExpr{Star: tok}

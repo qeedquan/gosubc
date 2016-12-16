@@ -81,6 +81,14 @@ func (c *compiler) funcDecl(d *ast.FuncDecl) {
 		return
 	}
 
+	ret := c.Types[d.Result]
+	switch ret.Type {
+	case types.Typ[types.Short], types.Typ[types.Long],
+		types.Typ[types.Float], types.Typ[types.Double],
+		types.Typ[types.Bool], types.Typ[types.Complex]:
+		c.errorf(d.Span().Start, "unsupported return type %s", ret.Type)
+	}
+
 	name := d.Name.Name
 
 	intSize := c.cg.Int()
@@ -201,6 +209,13 @@ func (c *compiler) variable(d *ast.Ident, m map[*ast.Ident]types.Object) (*types
 	v, ok := obj.(*types.Var)
 	if !ok {
 		c.errorf(pos, "not a valid variable")
+	}
+
+	switch v.Type() {
+	case types.Typ[types.Short], types.Typ[types.Long],
+		types.Typ[types.Float], types.Typ[types.Double],
+		types.Typ[types.Bool], types.Typ[types.Complex]:
+		c.errorf(pos, "unsupported type %s for variable", v.Type())
 	}
 
 	return v, true

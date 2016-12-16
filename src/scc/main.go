@@ -152,7 +152,10 @@ func makeObj(input, output string) error {
 	}
 
 	compileConfig := compile.Config{Emitter: emitter, MaxErrors: flags.MaxErrors}
-	compile.Compile(compileConfig, prog, info)
+	err = compile.Compile(compileConfig, prog, info)
+	if err != nil {
+		return err
+	}
 
 	if flags.PrintAsm {
 		fmt.Println(buf.String())

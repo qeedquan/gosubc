@@ -26,6 +26,7 @@ var flags struct {
 	CompileOnly    bool
 	PrintAsm       bool
 	RemoveOnFinish bool
+	Profile        string
 	Output         string
 	TempDir        string
 	MaxErrors      int
@@ -50,6 +51,7 @@ func init() {
 	flag.BoolVar(&flags.RemoveOnFinish, "R", true, "remove generated files on finish")
 	flag.StringVar(&flags.Output, "o", "", "output file (for one file input only)")
 	flag.StringVar(&flags.TempDir, "T", "", "temporary directory to use for work")
+	flag.StringVar(&flags.Profile, "profile", "", "generate cpu profiling output to file")
 	flag.IntVar(&flags.MaxErrors, "errors", 10, "max errors (use a number <= 0 for all the errors) ")
 
 	theArch := runtime.GOARCH

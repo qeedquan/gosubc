@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/pprof"
 	"sort"
 	"strings"
 
@@ -31,6 +32,16 @@ func main() {
 func build() int {
 	var err error
 	var objFiles []string
+
+	if flags.Profile != "" {
+		f, err := os.Create(flags.Profile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "could not generate profile output: ", err)
+		} else {
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+		}
+	}
 
 	exitStatus := 0
 	for i := 0; i < flag.NArg(); i++ {

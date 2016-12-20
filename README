@@ -19,6 +19,8 @@ the official one. The differences are listed below:
 
 * __FILE__, __LINE__, __TIME__, __DATE__, __func__, __FUNCTION__ are supported
 
+* #warning is supported
+
 * goto is supported, labels can be declared after local variable declarations.
 
 * function parameters can have no names, ie, void f(int, int a, int, char x)

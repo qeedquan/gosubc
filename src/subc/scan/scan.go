@@ -149,9 +149,19 @@ func (l *Scanner) Close() error {
 }
 
 // perrorf sends an error down the token channel.
+func (l *Scanner) perrorf(force bool, format string, args ...interface{}) stateFn {
+	return l.emitError(Error, force, format, args...)
+}
+
+// pwarnf sends a warning down the token channel.
+func (l *Scanner) pwarnf(force bool, format string, args ...interface{}) stateFn {
+	return l.emitError(Warning, force, format, args...)
+}
+
+// emitError emits an error down the token channel.
 // The force flag is true whenever it is scanning in a #ifdef/#ifndef macros are used to
 // disable a section of the source, but is an error that occurs in the preprocessor.
-func (l *Scanner) perrorf(force bool, format string, args ...interface{}) stateFn {
+func (l *Scanner) emitError(typ Type, force bool, format string, args ...interface{}) stateFn {
 	if !force && l.frozen(1) {
 		return lexAny
 	}
@@ -159,7 +169,7 @@ func (l *Scanner) perrorf(force bool, format string, args ...interface{}) stateF
 	if l.r.LockedPos() {
 		pos = l.r.Pos()
 	}
-	l.Tokens <- Token{Error, pos, fmt.Sprintf(format, args...)}
+	l.Tokens <- Token{typ, pos, fmt.Sprintf(format, args...)}
 	return lexAny
 }
 
@@ -877,7 +887,9 @@ func lexPreprocessor(l *Scanner) stateFn {
 	case "endif":
 		l.endifDirective(p)
 	case "error":
-		l.errorDirective(p)
+		l.errorDirective(p, true)
+	case "warning":
+		l.errorDirective(p, false)
 	case "ifdef":
 		l.ifdefDirective(p, true)
 	case "ifndef":
@@ -954,8 +966,8 @@ func (l *Scanner) endifDirective(p *Scanner) {
 	}
 }
 
-// errorDirective handles the #error directive.
-func (l *Scanner) errorDirective(p *Scanner) {
+// errorDirective handles the #error/#warning directive.
+func (l *Scanner) errorDirective(p *Scanner, isError bool) {
 	var err string
 	for s := range p.Tokens {
 		err += s.Text + " "
@@ -963,7 +975,11 @@ func (l *Scanner) errorDirective(p *Scanner) {
 	if err != "" {
 		err = err[:len(err)-1]
 	}
-	l.perrorf(false, "#error: %v", err)
+	if isError {
+		l.perrorf(false, "#error: %v", err)
+	} else {
+		l.pwarnf(false, "#warning: %v", err)
+	}
 }
 
 // ifdefDirective handles the #ifdef directive.

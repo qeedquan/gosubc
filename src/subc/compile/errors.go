@@ -12,8 +12,8 @@ func (c *compiler) invalidAST(pos scanner.Position, format string, args ...inter
 }
 
 func (c *compiler) errorf(pos scanner.Position, format string, args ...interface{}) {
-	c.errors = append(c.errors, scan.ErrorMessage{pos, fmt.Sprintf(format, args...), false})
-	if c.conf.MaxErrors > 0 && len(c.errors) >= c.conf.MaxErrors {
+	c.errors.Add(scan.ErrorMessage{pos, fmt.Sprintf(format, args...), false})
+	if c.conf.MaxErrors > 0 && c.errors.NumErrors >= c.conf.MaxErrors {
 		panic(bailout{})
 	}
 }

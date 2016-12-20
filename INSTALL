@@ -1,7 +1,7 @@
 Currently, only linux amd64 is supported for building, but the code
 emitter has been tested on i386 too.
 
-You need a linux amd64 machine with go 1.5
+You need a linux amd64 machine with the most recent version of go.
 
 type "make" in the dir with the Makefile to build scc for linux-amd64.
 

@@ -21,8 +21,8 @@ func (c *checker) invalidArg(pos scanner.Position, format string, args ...interf
 
 func (c *checker) errorf(pos scanner.Position, format string, args ...interface{}) {
 	err := scan.ErrorMessage{pos, fmt.Sprintf(format, args...), false}
-	c.errors = append(c.errors, err)
-	if c.conf.MaxErrors > 0 && len(c.errors) >= c.conf.MaxErrors {
+	c.errors.Add(err)
+	if c.conf.MaxErrors > 0 && c.errors.NumErrors >= c.conf.MaxErrors {
 		panic(bailout{})
 	}
 }

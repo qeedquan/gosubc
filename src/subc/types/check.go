@@ -82,8 +82,8 @@ func (c *checker) Check(prog *ast.Prog) (info *Info, err error) {
 
 	c.top(prog)
 
-	if c.errors != nil {
-		return c.Info, c.errors
+	if c.errors.NumErrors > 0 {
+		return c.Info, &c.errors
 	}
 	return c.Info, nil
 }

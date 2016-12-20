@@ -50,6 +50,7 @@ type Type int
 const (
 	EOF Type = iota
 	Error
+	Warning
 	Comment
 	Preprocessor
 
@@ -155,6 +156,7 @@ const (
 var types = [...]string{
 	EOF:          "EOF",
 	Error:        "error",
+	Warning:      "warning",
 	Comment:      "comment",
 	Preprocessor: "preprocessor",
 

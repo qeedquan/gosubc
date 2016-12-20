@@ -36,7 +36,7 @@ func build() int {
 	if flags.Profile != "" {
 		f, err := os.Create(flags.Profile)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "could not generate profile output: ", err)
+			fmt.Fprintln(os.Stderr, "could not generate profile output:", err)
 		} else {
 			pprof.StartCPUProfile(f)
 			defer pprof.StopCPUProfile()
@@ -112,13 +112,28 @@ func parseAndTypecheck(scanner *scan.Scanner, emitter *arch.Emitter) (*ast.Prog,
 	}
 	parseConfig := parse.Config{MaxErrors: flags.MaxErrors, Predecl: predecl}
 	prog, err := parse.Parse(parseConfig, scanner)
-	if err != nil {
+	if err = checkFrontEndError(err); err != nil {
 		return prog, nil, err
 	}
 
 	typeConfig := types.Config{Sizes: emitter.Sizes, MaxErrors: flags.MaxErrors}
 	info, err := types.Check(typeConfig, prog)
-	return prog, info, err
+	return prog, info, checkFrontEndError(err)
+}
+
+func checkFrontEndError(err error) error {
+	l, _ := err.(*scan.ErrorList)
+	if l == nil {
+		return err
+	}
+	if l.NumErrors > 0 {
+		return err
+	}
+
+	for _, m := range l.Messages {
+		fmt.Fprintln(os.Stderr, m)
+	}
+	return nil
 }
 
 func newArchEmitter(w io.Writer) (*arch.Emitter, error) {

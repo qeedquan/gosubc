@@ -69,9 +69,16 @@ func (p *parser) scan() scan.Token {
 		tok := p.scanner.Scan()
 		switch tok.Type {
 		case scan.Comment, scan.Preprocessor:
+		case scan.Warning:
+			p.warnf(tok.Pos, "%v", tok.Text)
 		case scan.Error:
 			p.errorf(tok.Pos, "%v", tok.Text)
 			p.errTok = tok
+		case scan.EOF:
+			if !tok.Pos.IsValid() {
+				tok.Pos = p.curTok.Pos
+			}
+			fallthrough
 		default:
 			return tok
 		}
@@ -82,13 +89,13 @@ func (p *parser) scan() scan.Token {
 func (p *parser) next() scan.Token {
 	if p.putbackTok.Type != scan.EOF {
 		tok := p.putbackTok
-		p.putbackTok = scan.Token{Type: scan.EOF}
+		p.putbackTok = scan.Token{Pos: tok.Pos, Type: scan.EOF}
 		return tok
 	}
 
 	tok := p.peekTok
 	if tok.Type != scan.EOF {
-		p.peekTok = scan.Token{Type: scan.EOF}
+		p.peekTok = scan.Token{Pos: tok.Pos, Type: scan.EOF}
 	} else {
 		tok = p.scan()
 	}
@@ -121,10 +128,16 @@ type bailout struct{}
 // errorf reports an error.
 func (p *parser) errorf(pos scanner.Position, format string, args ...interface{}) {
 	text := fmt.Sprintf(format, args...)
-	p.errors = append(p.errors, scan.ErrorMessage{pos, text, false})
-	if p.conf.MaxErrors > 0 && len(p.errors) >= p.conf.MaxErrors {
+	p.errors.Add(scan.ErrorMessage{pos, text, false})
+	if p.conf.MaxErrors > 0 && p.errors.NumErrors >= p.conf.MaxErrors {
 		panic(bailout{})
 	}
+}
+
+// warnf reports a warning.
+func (p *parser) warnf(pos scanner.Position, format string, args ...interface{}) {
+	text := fmt.Sprintf(format, args...)
+	p.errors.Add(scan.ErrorMessage{pos, text, true})
 }
 
 // expect expects a token, erroring if it does not match.

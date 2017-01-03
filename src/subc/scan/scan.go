@@ -860,9 +860,28 @@ func (l *Scanner) isOperator(r rune) bool {
 
 // lexPreprocessor scans a preprocessor directive.
 func lexPreprocessor(l *Scanner) stateFn {
-	l.acceptRunFunc(func(r rune) bool {
-		return r != '\n' && r != eof
-	})
+	for {
+		r := l.peek()
+		if r == '\\' {
+			l.next()
+			switch r = l.peek(); r {
+			case eof:
+				l.pwarnf(false, "backslash-newline at end of file")
+			case '\n':
+				l.next()
+				continue
+			default:
+				l.rbuf = append(l.rbuf, '\\')
+			}
+		}
+
+		if r == '\n' || r == eof {
+			break
+		}
+
+		l.next()
+		l.rbuf = append(l.rbuf, r)
+	}
 	l.next()
 
 	if !l.conf.ApplyPreprocessor {
@@ -897,14 +916,19 @@ func lexPreprocessor(l *Scanner) stateFn {
 	case "include":
 		l.includeDirective(p, line)
 	case "line":
-		l.lineDirective(p)
+		l.lineDirective(p, <-p.Tokens)
 	case "pragma":
 	case "undef":
 		l.undefDirective(p)
 	case "":
 		return l.errorf("empty directive")
 	default:
-		return l.errorf("unknown directive: %q", t.Text)
+		switch t.Type {
+		case Number:
+			l.lineDirective(p, t)
+		default:
+			return l.errorf("unknown directive: %q", t.Text)
+		}
 	}
 
 	return lexAny
@@ -1072,8 +1096,7 @@ func (l *Scanner) includeDirective(p *Scanner, line string) {
 }
 
 // lineDirective handles #line directives.
-func (l *Scanner) lineDirective(p *Scanner) {
-	t := <-p.Tokens
+func (l *Scanner) lineDirective(p *Scanner, t Token) {
 	if t.Type != Number {
 		l.errorf("#line: expected a non-negative integer, got %q", t.Text)
 		return
@@ -1084,8 +1107,17 @@ func (l *Scanner) lineDirective(p *Scanner) {
 		l.errorf("#line: invalid line number: %v", err)
 		return
 	}
+
 	l.r.Line = line + 1
 	l.peekPos.Line = l.r.Line
+
+	t = <-p.Tokens
+	if t.Type == String {
+		name, err := strconv.Unquote(t.Text)
+		if err == nil {
+			l.r.Filename = name
+		}
+	}
 }
 
 // undefDirective handles #undef directives.

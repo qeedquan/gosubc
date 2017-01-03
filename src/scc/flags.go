@@ -23,6 +23,7 @@ func (m *MultiFlag) Set(s string) error {
 var flags struct {
 	Includes       MultiFlag
 	Defines        MultiFlag
+	UseCpp         bool
 	CompileOnly    bool
 	PrintAsm       bool
 	RemoveOnFinish bool
@@ -46,6 +47,7 @@ var flags struct {
 func init() {
 	flag.Var(&flags.Includes, "I", "include paths, also settable via SCCINC environment variable")
 	flag.Var(&flags.Defines, "D", "define a macro of the form macro=expansion")
+	flag.BoolVar(&flags.UseCpp, "cpp", false, "use external C preprocessor, settable via CPP environment variable")
 	flag.BoolVar(&flags.CompileOnly, "c", false, "compile only")
 	flag.BoolVar(&flags.PrintAsm, "S", false, "print asm only")
 	flag.BoolVar(&flags.RemoveOnFinish, "R", true, "remove generated files on finish")

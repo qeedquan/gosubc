@@ -12,6 +12,7 @@ import (
 	"runtime/pprof"
 	"sort"
 	"strings"
+	"text/scanner"
 
 	"subc/ast"
 	"subc/compile"
@@ -93,10 +94,40 @@ func build() int {
 	return exitStatus
 }
 
+func getCmdArgs(env, def string) []string {
+	cmd := os.Getenv(env)
+	if cmd == "" {
+		cmd = def
+	}
+	return strings.Fields(cmd)
+}
+
 func newScanner(name string) (*scan.Scanner, error) {
-	reader, err := scan.OpenFile(name)
-	if err != nil {
-		return nil, err
+	var (
+		reader scan.Reader
+		err    error
+	)
+	if flags.UseCpp {
+		args := getCmdArgs("CPP", "cpp")
+		for _, include := range flags.Includes {
+			args = append(args, fmt.Sprintf("-I%s", include))
+		}
+		args = append(args, name)
+
+		buf, err := exec.Command(args[0], args[1:]...).Output()
+		if err != nil {
+			return nil, err
+		}
+		reader = scan.StringReader(scanner.Position{
+			Filename: name,
+			Line:     1,
+			Column:   1,
+		}, string(buf), false)
+	} else {
+		reader, err = scan.OpenFile(name)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	scanConfig := scan.DefaultConfig
@@ -188,15 +219,13 @@ func makeObj(input, output string) error {
 		return nil
 	}
 
-	as := os.Getenv("AS")
-	if as == "" {
-		as = "as"
-	}
+	args := getCmdArgs("AS", "as")
+	args = append(args, "-o", output)
 
 	cmdErr := new(bytes.Buffer)
 	cmdOut := new(bytes.Buffer)
 
-	cmd := exec.Command(as, "-o", output)
+	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stdin = buf
 	cmd.Stderr = cmdErr
 	cmd.Stdout = cmdOut
@@ -254,18 +283,15 @@ func linkObjs(output string, objFiles ...string) error {
 		return nil
 	}
 
-	ld := os.Getenv("LD")
-	if ld == "" {
-		ld = "ld"
-	}
-
 	runtimeDir := filepath.Join(flags.RuntimeDir, flags.Arch, flags.OS)
-	args := []string{"-o", output}
-	args = append(args, filepath.Clean(filepath.Join(runtimeDir, "crt0.o")))
-	args = append(args, objFiles...)
-	args = append(args, filepath.Clean(filepath.Join(runtimeDir, "libscc.a")))
 
-	cmd := exec.Command(ld, args...)
+	args := getCmdArgs("LD", "ld")
+	args = append(args, "-o", output)
+	args = append(args, filepath.Join(runtimeDir, "crt0.o"))
+	args = append(args, objFiles...)
+	args = append(args, filepath.Join(runtimeDir, "libscc.a"))
+
+	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	return cmd.Run()

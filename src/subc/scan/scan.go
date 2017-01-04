@@ -867,6 +867,14 @@ func lexPreprocessor(l *Scanner) stateFn {
 			switch r = l.peek(); r {
 			case eof:
 				l.pwarnf(false, "backslash-newline at end of file")
+			case '\r':
+				l.next()
+				r = l.peek()
+				if r != '\n' {
+					l.rbuf = append(l.rbuf, '\\', '\r')
+					continue
+				}
+				fallthrough
 			case '\n':
 				l.next()
 				continue

@@ -114,7 +114,9 @@ func newScanner(name string) (*scan.Scanner, error) {
 		}
 		args = append(args, name)
 
-		buf, err := exec.Command(args[0], args[1:]...).Output()
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.Stderr = os.Stderr
+		buf, err := cmd.Output()
 		if err != nil {
 			return nil, err
 		}

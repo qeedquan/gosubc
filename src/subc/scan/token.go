@@ -53,6 +53,7 @@ const (
 	Warning
 	Comment
 	Preprocessor
+	Pragma
 
 	Div
 	Mul
@@ -159,6 +160,7 @@ var types = [...]string{
 	Warning:      "warning",
 	Comment:      "comment",
 	Preprocessor: "preprocessor",
+	Pragma:       "pragma",
 
 	Div:   "/",
 	Mul:   "*",

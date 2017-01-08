@@ -937,6 +937,7 @@ func lexPreprocessor(l *Scanner) stateFn {
 	case "line":
 		l.lineDirective(p, <-p.Tokens)
 	case "pragma":
+		l.pragmaDirective(p)
 	case "undef":
 		l.undefDirective(p)
 	case "":
@@ -1015,13 +1016,7 @@ func (l *Scanner) endifDirective(p *Scanner) {
 
 // errorDirective handles the #error/#warning directive.
 func (l *Scanner) errorDirective(p *Scanner, isError bool) {
-	var err string
-	for s := range p.Tokens {
-		err += s.Text + " "
-	}
-	if err != "" {
-		err = err[:len(err)-1]
-	}
+	err := lexPreprocessorText(p)
 	if isError {
 		l.perrorf(false, "#error: %v", err)
 	} else {
@@ -1151,6 +1146,15 @@ func (l *Scanner) lineDirective(p *Scanner, t Token) {
 	}
 }
 
+// pragmaDirective handles #pragma directives.
+func (l *Scanner) pragmaDirective(p *Scanner) {
+	if l.frozen(1) {
+		return
+	}
+
+	l.emit(Pragma, lexPreprocessorText(p))
+}
+
 // undefDirective handles #undef directives.
 func (l *Scanner) undefDirective(p *Scanner) {
 	if l.frozen(1) {
@@ -1163,6 +1167,20 @@ func (l *Scanner) undefDirective(p *Scanner) {
 		return
 	}
 	delete(l.macros, t.Text)
+}
+
+// lexPreprocessorText gets all the text from the preprocessor line.
+func lexPreprocessorText(p *Scanner) string {
+	t := ""
+	r := Token{}
+	for s := range p.Tokens {
+		if r.Pos.IsValid() && r.Pos.Offset+len(r.Text) != s.Pos.Offset {
+			t += " "
+		}
+		t += s.Text
+		r = s
+	}
+	return t
 }
 
 // isIdent returns if a given input is a valid identifier

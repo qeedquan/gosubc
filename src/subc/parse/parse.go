@@ -68,7 +68,7 @@ func (p *parser) scan() scan.Token {
 	for {
 		tok := p.scanner.Scan()
 		switch tok.Type {
-		case scan.Comment, scan.Preprocessor:
+		case scan.Comment, scan.Preprocessor, scan.Pragma:
 		case scan.Warning:
 			p.warnf(tok.Pos, "%v", tok.Text)
 		case scan.Error:

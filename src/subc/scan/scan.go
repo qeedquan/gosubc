@@ -340,7 +340,6 @@ func lexAny(l *Scanner) stateFn {
 		}
 		return l.errorf("unrecognized character: %#U", r)
 	}
-	return lexAny
 }
 
 // lexNextReader is called when the reader has reached the end of its input,
@@ -482,13 +481,15 @@ func (l *Scanner) expandMacro(macro string) bool {
 
 	switch macro {
 	case "__LINE__":
-		l.macros[macro] = fmt.Sprintf("%v", l.r.Line)
+		l.macros[macro] = fmt.Sprint(l.r.Line)
 	case "__COUNTER__":
 		if l.counter == math.MaxUint64 {
 			l.errorf("__COUNTER__ overflowed")
 		}
-		l.macros[macro] = fmt.Sprintf("%v", l.counter)
-		l.counter++
+		l.macros[macro] = fmt.Sprint(l.counter)
+		if !l.frozen(1) {
+			l.counter++
+		}
 	}
 
 	c := l.conf
@@ -954,6 +955,10 @@ func lexPreprocessor(l *Scanner) stateFn {
 
 // defineDirective handles #define directives.
 func (l *Scanner) defineDirective(p *Scanner) {
+	if l.frozen(1) {
+		return
+	}
+
 	t := <-p.Tokens
 	if !isIdent(t.Text) {
 		l.errorf("#define: expected identifier, got %q", t.Text)
@@ -1024,7 +1029,7 @@ func (l *Scanner) errorDirective(p *Scanner, isError bool) {
 	}
 }
 
-// ifdefDirective handles the #ifdef directive.
+// ifdefDirective handles the #ifdef/#ifndef directive.
 func (l *Scanner) ifdefDirective(p *Scanner, cond bool) {
 	t := <-p.Tokens
 	if !isIdent(t.Text) {
@@ -1046,6 +1051,10 @@ func (l *Scanner) ifdefDirective(p *Scanner, cond bool) {
 
 // includeDirective handles the #include directive.
 func (l *Scanner) includeDirective(p *Scanner, line string) {
+	if l.frozen(1) {
+		return
+	}
+
 	xname := ""
 	name := ""
 	paths := l.conf.IncludePaths
@@ -1115,6 +1124,10 @@ func (l *Scanner) includeDirective(p *Scanner, line string) {
 
 // lineDirective handles #line directives.
 func (l *Scanner) lineDirective(p *Scanner, t Token) {
+	if l.frozen(1) {
+		return
+	}
+
 	if t.Type != Number {
 		l.errorf("#line: expected a non-negative integer, got %q", t.Text)
 		return
@@ -1140,6 +1153,10 @@ func (l *Scanner) lineDirective(p *Scanner, t Token) {
 
 // undefDirective handles #undef directives.
 func (l *Scanner) undefDirective(p *Scanner) {
+	if l.frozen(1) {
+		return
+	}
+
 	t := <-p.Tokens
 	if !isIdent(t.Text) {
 		l.errorf("#undef expected an identifier, got %q", t.Text)

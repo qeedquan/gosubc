@@ -4,6 +4,7 @@ package scan
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -77,6 +78,7 @@ type Scanner struct {
 	macros        map[string]string
 	peekDirective bool
 	directive     bool
+	counter       uint64
 }
 
 // Special sentinels for the scanner
@@ -127,6 +129,7 @@ func New(conf Config, name string, r Reader) *Scanner {
 			l.macros["__FILE__"] = strconv.Quote(name)
 		}
 		l.macros["__LINE__"] = ""
+		l.macros["__COUNTER__"] = ""
 	}
 
 	l.s = []*reader{l.r}
@@ -477,8 +480,15 @@ func (l *Scanner) expandMacro(macro string) bool {
 		return false
 	}
 
-	if macro == "__LINE__" {
+	switch macro {
+	case "__LINE__":
 		l.macros[macro] = fmt.Sprintf("%v", l.r.Line)
+	case "__COUNTER__":
+		if l.counter == math.MaxUint64 {
+			l.errorf("__COUNTER__ overflowed")
+		}
+		l.macros[macro] = fmt.Sprintf("%v", l.counter)
+		l.counter++
 	}
 
 	c := l.conf
@@ -621,7 +631,7 @@ loop:
 		case r == term:
 			break loop
 		case r == '\n' || r == eof:
-			return l.errorf("missing terminating ' character: %q")
+			return l.errorf("%q: missing terminating ' character", string(l.rbuf))
 		}
 	}
 	l.emit(typ, string(l.rbuf))

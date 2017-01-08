@@ -17,7 +17,7 @@ The darwinamd64 and arm6 has not been tested and was just implemented by a trans
 There are some minor differences in this implementation of SubC and
 the official one. The differences are listed below:
 
-* __FILE__, __LINE__, __TIME__, __DATE__, __func__, __FUNCTION__ are supported
+* __FILE__, __LINE__, __TIME__, __DATE__, __func__, __FUNCTION__, __COUNTER__ are supported
 
 * #warning, multi-line macros are supported
 

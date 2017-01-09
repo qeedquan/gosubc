@@ -145,7 +145,7 @@ func (p *parser) expect(typ scan.Type) scan.Token {
 	tok := p.next()
 	if typ != tok.Type {
 		s := tok.Type.String()
-		if tok.IsLiteral() {
+		if tok.IsLiteral() || tok.Type == scan.Ident {
 			s = tok.Text
 		}
 		p.errorf(tok.Pos, "expected %q, but got %q", typ, s)

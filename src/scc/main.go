@@ -306,6 +306,31 @@ func dump(name string) error {
 	}
 	defer scanner.Close()
 
+	if flags.DumpCpp {
+		line, col := 1, 1
+		for tok := range scanner.Tokens {
+			for ; line < tok.Pos.Line; line, col = line+1, 1 {
+				fmt.Printf("\n")
+			}
+			for ; col < tok.Pos.Column; col++ {
+				fmt.Printf(" ")
+			}
+			if tok.Type == scan.String {
+				fmt.Printf("%q", tok.Text)
+			} else {
+				fmt.Printf("%s", tok.Text)
+			}
+			col += len(tok.Text)
+		}
+		fmt.Printf("\n")
+
+		scanner, err = newScanner(name)
+		if err != nil {
+			return err
+		}
+		defer scanner.Close()
+	}
+
 	if flags.DumpTokens {
 		fmt.Println()
 		for tok := range scanner.Tokens {

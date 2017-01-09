@@ -67,7 +67,7 @@ func init() {
 	flag.StringVar(&flags.OS, "os", theOS, "specify os to compile for [linux | darwin]")
 	flag.StringVar(&flags.RootDir, "root", os.Getenv("SCCROOT"), "specify the root directory, also settable via SCCROOT environment variable")
 
-	flag.BoolVar(&flags.DumpCpp, "E", false, "dump preprocessor text")
+	flag.BoolVar(&flags.DumpCpp, "dump-cpp", false, "dump preprocessor text for debugging")
 	flag.BoolVar(&flags.DumpTokens, "dump-tokens", false, "dump lexical tokens for debugging")
 	flag.BoolVar(&flags.DumpAST, "dump-ast", false, "dump ast tree for debugging")
 	flag.BoolVar(&flags.DumpTypes, "dump-types", false, "dump types for debugging")

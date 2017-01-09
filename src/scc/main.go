@@ -307,8 +307,16 @@ func dump(name string) error {
 	defer scanner.Close()
 
 	if flags.DumpCpp {
+		file := ""
 		line, col := 1, 1
 		for tok := range scanner.Tokens {
+			tok.Pos.Filename = strings.TrimRight(tok.Pos.Filename, " (macro)")
+			if file != tok.Pos.Filename {
+				fmt.Printf("\n# %d %s\n\n", tok.Pos.Line, tok.Pos.Filename)
+				file = tok.Pos.Filename
+				line = tok.Pos.Line
+				col = tok.Pos.Column
+			}
 			for ; line < tok.Pos.Line; line, col = line+1, 1 {
 				fmt.Printf("\n")
 			}

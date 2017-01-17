@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"runtime/pprof"
 	"sort"
 	"strings"
@@ -34,13 +35,28 @@ func build() int {
 	var err error
 	var objFiles []string
 
-	if flags.Profile != "" {
-		f, err := os.Create(flags.Profile)
+	if flags.CpuProfile != "" {
+		f, err := os.Create(flags.CpuProfile)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "could not generate profile output:", err)
+			fmt.Fprintln(os.Stderr, "could not generate cpu profile output:", err)
 		} else {
 			pprof.StartCPUProfile(f)
 			defer pprof.StopCPUProfile()
+		}
+	}
+	if flags.MemProfile != "" {
+		f, err := os.Create(flags.MemProfile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "could not generate memory profile output:", err)
+		} else {
+			defer func() {
+				runtime.GC()
+				err := pprof.WriteHeapProfile(f)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "could not write memory profile:", err)
+				}
+				f.Close()
+			}()
 		}
 	}
 

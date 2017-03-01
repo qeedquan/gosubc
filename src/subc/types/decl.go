@@ -81,7 +81,14 @@ func decayArg(typ Type) Type {
 // funcDecl type checks a function declaration.
 func (c *checker) funcDecl(d *ast.FuncDecl) {
 	name := d.Name.Name
-	result := NewVar(d.Result.Span().Start, newStorage(d.Storage, true, true), "", c.typExpr(d.Result), nil)
+
+	var result *Var
+	if d.Result != nil {
+		result = NewVar(d.Result.Span().Start, newStorage(d.Storage, true, true), "", c.typExpr(d.Result), nil)
+	} else {
+		result = NewVar(d.Span().Start, newStorage(d.Storage, true, true), "", Typ[Int], nil)
+	}
+
 	variadic := false
 
 	// f() is f(void), not variadic for this language.

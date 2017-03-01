@@ -388,9 +388,13 @@ func (d *FieldDecl) Span() scan.Span {
 }
 
 func (d *FuncDecl) Span() scan.Span {
-	n := d.Result.Span()
-	if d.Storage != nil {
+	var n scan.Span
+	if d.Result != nil {
+		n = d.Result.Span()
+	} else if d.Storage != nil {
 		n = d.Storage.Span()
+	} else {
+		n = d.Name.Span()
 	}
 
 	m := d.Rparen.Span()
@@ -415,9 +419,12 @@ func (d *VarDecl) Span() scan.Span {
 
 	if d.Storage != nil {
 		span[0] = d.Storage.Span()
-	} else {
+	} else if d.Type != nil {
 		span[0] = d.Type.Span()
+	} else {
+		span[0] = d.Name.Span()
 	}
+
 	span[1] = d.Name.Span()
 	if d.Value != nil {
 		span[2] = d.Value.Span()

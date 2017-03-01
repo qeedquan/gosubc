@@ -540,13 +540,14 @@ func (p *parser) primType(tok scan.Token) ast.Expr {
 }
 
 // setType sets y to be an element that x points to, x needs to be a basic type
-// or a record type.
+// or a record type, if not it is most likely a compile error when it reached here
 func setType(x, y ast.Expr) {
 	switch x := x.(type) {
 	case *ast.BasicType:
 		x.X = y
 	case *ast.RecordType:
 		x.X = y
+	case *ast.FuncType:
 	case nil:
 	default:
 		panic(fmt.Sprintf("unimplemented type: %T", x))

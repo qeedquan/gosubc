@@ -1,20 +1,22 @@
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-GOPATH := $(dir ${mkfile_path})
-TMP := ${GOPATH}tmp
-SCC := ${GOPATH}subc
-LIB := ${GOPATH}subc/src/lib
-RUNTIME := ${GOPATH}runtime
-export SCCROOT := ${GOPATH}
+SCCPATH := $(dir ${mkfile_path})
+TMP := ${SCCPATH}tmp
+SCC := ${SCCPATH}subc
+LIB := ${SCCPATH}subc/src/lib
+RUNTIME := ${SCCPATH}runtime
+export SCCROOT := ${SCCPATH}
 
 AS=as
 
 all: linux-amd64 clean go scc
 
 clean: linux-amd64
-	rm -rf ${GOPATH}pkg
-	rm -rf ${GOPATH}bin
+	rm -rf ${SCCPATH}pkg
+	rm -rf ${SCCPATH}bin
+	rm -rf ${SCCPATH}fuzzrun
 	rm -rf ${TMP}
 	rm -rf ${RUNTIME}
+	rm -f ${SCCPATH}subcast-fuzz.zip
 	mkdir -p ${RUNTIME}
 	cd ${SCC}; make clean
 
@@ -24,12 +26,14 @@ linux-amd64:
 	$(eval RUNTIME := $(RUNTIME)/$(ARCH)/$(OS))
 
 go:
-	export GOPATH=${GOPATH}; go install scc
+	export GOPATH=${GOPATH}:${SCCPATH}; go install scc
 
 scc:
 	cd ${SCC}; make clean; ./configure
 	bin/scc -T ${TMP} -c ${LIB}/*.c
 	ar -rc ${RUNTIME}/libscc.a ${TMP}/*.o
 	$(AS) -o ${RUNTIME}/crt0.o ${LIB}/crt0.s
-	cd ${SCC}/src; cp ${GOPATH}/bin/scc scc0; make scc; cp scc ${GOPATH}/bin/sccb
+	cd ${SCC}/src; cp ${SCCPATH}/bin/scc scc0; make scc; cp scc ${SCCPATH}/bin/sccb
 
+fuzz:
+	export GOPATH=${GOPATH}:${SCCPATH}; go-fuzz-build fuzz/subcast; go-fuzz -bin=./subcast-fuzz.zip -workdir=${SCCPATH}fuzzrun

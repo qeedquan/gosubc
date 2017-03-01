@@ -26,7 +26,7 @@ linux-amd64:
 	$(eval RUNTIME := $(RUNTIME)/$(ARCH)/$(OS))
 
 go:
-	export GOPATH=${GOPATH}:${SCCPATH}; go install scc
+	export GOPATH=${SCCPATH}; go install scc
 
 scc:
 	cd ${SCC}; make clean; ./configure

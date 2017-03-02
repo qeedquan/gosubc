@@ -71,11 +71,11 @@ func truthInt(b bool) int64 {
 }
 
 // BinaryOp does a binary operation on two constant values.
-func BinaryOp(x Value, op scan.Type, y Value) Value {
+func BinaryOp(x Value, op scan.Type, y Value) (Value, error) {
 	x, y = match(x, y)
 	switch x := x.(type) {
 	case unknownVal:
-		return x
+		return x, nil
 
 	case int64Val:
 		a := int64(x)
@@ -85,22 +85,28 @@ func BinaryOp(x Value, op scan.Type, y Value) Value {
 		switch op {
 		case scan.Plus:
 			if !is63bit(a) || !is63bit(b) {
-				return normInt(new(big.Int).Add(big.NewInt(a), big.NewInt(b)))
+				return normInt(new(big.Int).Add(big.NewInt(a), big.NewInt(b))), nil
 			}
 			c = a + b
 		case scan.Minus:
 			if !is63bit(a) || !is63bit(b) {
-				return normInt(new(big.Int).Sub(big.NewInt(a), big.NewInt(b)))
+				return normInt(new(big.Int).Sub(big.NewInt(a), big.NewInt(b))), nil
 			}
 			c = a - b
 		case scan.Mul:
 			if !is32bit(a) || !is32bit(b) {
-				return normInt(new(big.Int).Mul(big.NewInt(a), big.NewInt(b)))
+				return normInt(new(big.Int).Mul(big.NewInt(a), big.NewInt(b))), nil
 			}
 			c = a * b
 		case scan.Div:
+			if b == 0 {
+				return int64Val(0), fmt.Errorf("division by zero")
+			}
 			c = a / b
 		case scan.Mod:
+			if b == 0 {
+				return int64Val(0), fmt.Errorf("modulo by zero")
+			}
 			c = a % b
 		case scan.And:
 			c = a & b
@@ -111,11 +117,14 @@ func BinaryOp(x Value, op scan.Type, y Value) Value {
 		case scan.Eq, scan.Neq, scan.Lt, scan.Leq, scan.Gt, scan.Geq:
 			c = truthInt(Compare(x, op, y))
 		case scan.Lsh, scan.Rsh:
+			if b < 0 {
+				return int64Val(0), fmt.Errorf("negative shift count")
+			}
 			return Shift(x, op, uint(b))
 		default:
 			goto Error
 		}
-		return int64Val(c)
+		return int64Val(c), nil
 
 	case intVal:
 		a := x.val
@@ -129,8 +138,14 @@ func BinaryOp(x Value, op scan.Type, y Value) Value {
 		case scan.Mul:
 			c.Mul(a, b)
 		case scan.Div:
+			if b.Sign() == 0 {
+				return normInt(&c), fmt.Errorf("division by zero")
+			}
 			c.Quo(a, b)
 		case scan.Mod:
+			if b.Sign() == 0 {
+				return normInt(&c), fmt.Errorf("modulus by zero")
+			}
 			c.Rem(a, b)
 		case scan.And:
 			c.And(a, b)
@@ -141,11 +156,14 @@ func BinaryOp(x Value, op scan.Type, y Value) Value {
 		case scan.Eq, scan.Neq, scan.Lt, scan.Leq, scan.Gt, scan.Geq:
 			c.SetInt64(truthInt(Compare(x, op, y)))
 		case scan.Lsh, scan.Rsh:
+			if b.Int64() < 0 {
+				return normInt(&c), fmt.Errorf("negative shift count")
+			}
 			return Shift(x, op, uint(b.Int64()))
 		default:
 			goto Error
 		}
-		return normInt(&c)
+		return normInt(&c), nil
 	}
 
 Error:
@@ -249,37 +267,40 @@ func match(x, y Value) (Value, Value) {
 		}
 	}
 
-	panic("unreachable")
+	panic(fmt.Errorf("unknown type: %T %T", x, y))
 }
 
 // Shift applies a left or right shift on a constant value.
-func Shift(x Value, op scan.Type, s uint) Value {
+func Shift(x Value, op scan.Type, s uint) (Value, error) {
+	if s > 1024 {
+		return int64Val(0), fmt.Errorf("shift count too large")
+	}
 	switch x := x.(type) {
 	case unknownVal:
-		return x
+		return x, nil
 
 	case int64Val:
 		if s == 0 {
-			return x
+			return x, nil
 		}
 		switch op {
 		case scan.Lsh:
 			z := big.NewInt(int64(x))
-			return normInt(z.Lsh(z, s))
+			return normInt(z.Lsh(z, s)), nil
 		case scan.Rsh:
-			return x >> s
+			return x >> s, nil
 		}
 
 	case intVal:
 		if s == 0 {
-			return x
+			return x, nil
 		}
 		var z big.Int
 		switch op {
 		case scan.Lsh:
-			return normInt(z.Lsh(x.val, s))
+			return normInt(z.Lsh(x.val, s)), nil
 		case scan.Rsh:
-			return normInt(z.Rsh(x.val, s))
+			return normInt(z.Rsh(x.val, s)), nil
 		}
 	}
 

@@ -146,8 +146,14 @@ func (c *checker) binary(x *operand, lhs, rhs ast.Expr, op scan.Type) {
 		}
 	}
 
-	if x.mode == constant_ && y.mode == constant_ && validConstBinOp(op) {
-		x.val = constant.BinaryOp(x.val, op, y.val)
+	if x.mode == constant_ && x.val.Type() != constant.String &&
+		y.mode == constant_ && y.val.Type() != constant.String &&
+		validConstBinOp(op) {
+		var err error
+		x.val, err = constant.BinaryOp(x.val, op, y.val)
+		if err != nil {
+			c.errorf(y.pos(), "%v", err)
+		}
 		return
 	}
 
@@ -200,7 +206,7 @@ func (c *checker) unary(x *operand, e *ast.UnaryExpr, op scan.Type) {
 		return
 	}
 
-	if x.mode == constant_ {
+	if x.mode == constant_ && x.val.Type() != constant.String {
 		x.val = constant.UnaryOp(op, x.val, uint(c.conf.Sizes.Sizeof(Typ[Int])))
 		return
 	}

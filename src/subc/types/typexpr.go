@@ -221,7 +221,11 @@ func (c *checker) typEnumDecl(e *ast.EnumDecl) Type {
 				return Typ[Invalid]
 			}
 		} else {
-			x.val = constant.BinaryOp(c.iota, scan.Plus, constant.MakeInt64(1))
+			var err error
+			x.val, err = constant.BinaryOp(c.iota, scan.Plus, constant.MakeInt64(1))
+			if err != nil {
+				c.errorf(x.pos(), "%v", err)
+			}
 		}
 		c.iota = x.val
 

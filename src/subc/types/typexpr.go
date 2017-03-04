@@ -161,7 +161,7 @@ loop:
 			if m.Len != nil {
 				c.constExpr(&x, m.Len)
 
-				if x.val.Type() != constant.Int {
+				if x.val == nil || x.val.Type() != constant.Int {
 					c.errorf(pos, "array length is not a constant integer")
 					break loop
 				}

@@ -192,7 +192,7 @@ func (c *checker) varDecl(d *ast.VarDecl, global bool) {
 			delete(scope.elems[Ord], name)
 		}
 
-		if !(alt != nil && v.val != nil && x.val == nil) {
+		if !(alt != nil && ok && v.val != nil && x.val == nil) {
 			c.declare(Ord, c.scope, d.Name, obj, scan.NoPos)
 		}
 		fwrd := NewFwrd(name, obj)

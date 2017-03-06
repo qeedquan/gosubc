@@ -175,6 +175,13 @@ func checkFrontEndError(err error) error {
 	if l == nil {
 		return err
 	}
+	if flags.NoWarnings {
+		l.NumErrors += l.NumWarnings
+		l.NumWarnings = 0
+		for i := range l.Messages {
+			l.Messages[i].Warning = false
+		}
+	}
 	if l.NumErrors > 0 {
 		return err
 	}

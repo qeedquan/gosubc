@@ -27,6 +27,7 @@ var flags struct {
 	CompileOnly    bool
 	PrintAsm       bool
 	RemoveOnFinish bool
+	NoWarnings     bool
 	CpuProfile     string
 	MemProfile     string
 	Output         string
@@ -53,6 +54,7 @@ func init() {
 	flag.BoolVar(&flags.CompileOnly, "c", false, "compile only")
 	flag.BoolVar(&flags.PrintAsm, "S", false, "print asm only")
 	flag.BoolVar(&flags.RemoveOnFinish, "R", true, "remove generated files on finish")
+	flag.BoolVar(&flags.RemoveOnFinish, "no-warnings", false, "treat warnings as errors")
 	flag.StringVar(&flags.Output, "o", "", "output file (for one file input only)")
 	flag.StringVar(&flags.TempDir, "T", "", "temporary directory to use for work")
 	flag.StringVar(&flags.CpuProfile, "cpuprofile", "", "generate cpu profiling output to file")
@@ -109,7 +111,7 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, os.Args[0]+" usage: [options] file ...")
+	fmt.Fprintln(os.Stderr, "usage:", os.Args[0], "[options] file ...")
 	flag.PrintDefaults()
 	os.Exit(0)
 }

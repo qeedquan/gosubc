@@ -130,6 +130,7 @@ func (p *parser) errorf(pos scanner.Position, format string, args ...interface{}
 	text := fmt.Sprintf(format, args...)
 	p.errors.Add(scan.ErrorMessage{pos, text, false})
 	if p.conf.MaxErrors > 0 && p.errors.NumErrors >= p.conf.MaxErrors {
+		p.errors.Add(scan.ErrorMessage{pos, "too many errors", false})
 		panic(bailout{})
 	}
 }

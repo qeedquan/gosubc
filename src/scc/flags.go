@@ -54,7 +54,7 @@ func init() {
 	flag.BoolVar(&flags.CompileOnly, "c", false, "compile only")
 	flag.BoolVar(&flags.PrintAsm, "S", false, "print asm only")
 	flag.BoolVar(&flags.RemoveOnFinish, "R", true, "remove generated files on finish")
-	flag.BoolVar(&flags.RemoveOnFinish, "no-warnings", false, "treat warnings as errors")
+	flag.BoolVar(&flags.NoWarnings, "no-warnings", false, "treat warnings as errors")
 	flag.StringVar(&flags.Output, "o", "", "output file (for one file input only)")
 	flag.StringVar(&flags.TempDir, "T", "", "temporary directory to use for work")
 	flag.StringVar(&flags.CpuProfile, "cpuprofile", "", "generate cpu profiling output to file")

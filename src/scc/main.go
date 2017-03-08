@@ -299,7 +299,14 @@ func printAsmOutput(w io.Writer, name string, buf *bytes.Buffer) {
 	}
 
 	for _, line := range lines {
-		fmt.Fprintf(w, "%s: %s\n", name, line[lp:])
+		if line == "" {
+			continue
+		}
+		if lp >= len(line) {
+			fmt.Fprintf(w, "%s: %s\n", name, line)
+		} else {
+			fmt.Fprintf(w, "%s: %s\n", name, line[lp:])
+		}
 	}
 }
 

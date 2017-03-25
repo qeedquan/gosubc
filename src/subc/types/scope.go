@@ -1,9 +1,10 @@
 package types
 
 import (
+	"text/scanner"
+
 	"subc/ast"
 	"subc/scan"
-	"text/scanner"
 )
 
 // Namespace represents a namespace for the language

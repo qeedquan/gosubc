@@ -74,7 +74,11 @@ func build() int {
 			} else {
 				os.MkdirAll(flags.TempDir, 0755)
 				ext := filepath.Ext(name)
-				objFile = name[:len(name)-len(ext)] + ".o"
+				if strings.ToLower(ext) == ".o" {
+					objFile = name + ".o"
+				} else {
+					objFile = name[:len(name)-len(ext)] + ".o"
+				}
 				if flags.TempDir != "" {
 					objFile = filepath.Join(flags.TempDir, filepath.Base(objFile))
 				}

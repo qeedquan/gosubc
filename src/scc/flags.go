@@ -75,7 +75,7 @@ func init() {
 	}
 
 	flag.StringVar(&flags.Arch, "arch", theArch, "specify machine architecture to compile for [amd64 | i386 | arm6]")
-	flag.StringVar(&flags.OS, "os", theOS, "specify os to compile for [linux | darwin]")
+	flag.StringVar(&flags.OS, "os", theOS, "specify os to compile for [linux | windows | darwin]")
 	flag.StringVar(&flags.RootDir, "root", rootdir, "specify the root directory, also settable via SCCROOT environment variable")
 
 	flag.BoolVar(&flags.DumpCpp, "dump-cpp", false, "dump preprocessor text for debugging")

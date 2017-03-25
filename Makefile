@@ -36,5 +36,4 @@ scc:
 	cd ${SCC}/src; cp ${SCCPATH}/bin/scc scc0; make scc; cp scc ${SCCPATH}/bin/sccb
 
 fuzz:
-	export GOPATH=${GOPATH}:${SCCPATH}; go-fuzz-build fuzz/subcasm; go-fuzz -bin=./subcast-fuzz.zip -workdir=${SCCPATH}fuzzrun
 	export GOPATH=${GOPATH}:${SCCPATH}; go-fuzz-build fuzz/subcast; go-fuzz -bin=./subcast-fuzz.zip -workdir=${SCCPATH}fuzzrun

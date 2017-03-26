@@ -15,11 +15,13 @@ const (
 	opANDQ
 	opCALL
 	opCLD
+	opCLI
 	opCMPQ
 	opCQO
 	opDECB
 	opDECQ
 	opDIVQ
+	opHLT
 	opIDIVQ
 	opIMULQ
 	opINCB
@@ -41,6 +43,9 @@ const (
 	opLEAQ
 	opLODSL
 	opLODSQ
+	opLOOP
+	opLOOPE
+	opLOOPNE
 	opMOVB
 	opMOVQ
 	opNEGQ
@@ -51,8 +56,10 @@ const (
 	opRET
 	opSARQ
 	opSBBQ
+	opSEI
 	opSHLQ
 	opSHRQ
+	opSTI
 	opSUBQ
 	opSYSCALL
 	opXCHGQ
@@ -60,14 +67,32 @@ const (
 )
 
 const (
-	rAX = 0
-	rCX = 1
-	rDX = 2
-	rBX = 3
-	rSP = 4
-	rBP = 5
-	rSI = 6
-	rDI = 7
+	rAX  = 0
+	rCX  = 1
+	rDX  = 2
+	rBX  = 3
+	rSP  = 4
+	rBP  = 5
+	rSI  = 6
+	rDI  = 7
+	rR8  = 8
+	rR9  = 9
+	rR10 = 10
+	rR11 = 11
+	rR12 = 12
+	rR13 = 13
+	rR14 = 14
+	rR15 = 15
+
+	rEAX = 0
+	rECX = 1
+	rEDX = 2
+	rEBX = 3
+	rESP = 4
+	rEBP = 5
+	rESI = 6
+	rEDI = 7
+
 	rAL = 0
 	rCL = 1
 	rDL = 2
@@ -89,6 +114,21 @@ var x86regs = map[string]struct {
 	"rbp": {rBP},
 	"rsi": {rSI},
 	"rdi": {rDI},
+	"r8":  {rR8},
+	"r9":  {rR9},
+	"r10": {rR10},
+	"r11": {rR11},
+	"r12": {rR12},
+	"r13": {rR13},
+	"r14": {rR14},
+	"r15": {rR15},
+	"eax": {rEAX},
+	"ecx": {rECX},
+	"edx": {rEDX},
+	"esp": {rESP},
+	"ebp": {rEBP},
+	"esi": {rESI},
+	"edi": {rEDI},
 	"al":  {rAL},
 	"cl":  {rCL},
 	"dl":  {rBL},
@@ -125,6 +165,21 @@ func (as *x86) bytes(op op, addr [2]addr, v interface{}) {
 		as.addrel(op, addr)
 	default:
 		as.errorf("unknown argument")
+	}
+}
+
+func (as *x86) alias(op string, x, y addr) string {
+	prefix := func(a addr) bool {
+		return a.typ == aREG && strings.HasPrefix(a.ident, "r")
+	}
+	switch op {
+	case "mov":
+		if prefix(x) || prefix(y) {
+			return op + "q"
+		}
+		return op + "l"
+	default:
+		return op
 	}
 }
 
@@ -176,7 +231,10 @@ func (as *x86) assemble(src []byte) {
 		}
 
 		x, y := addr[0], addr[1]
-		switch lop := strings.ToLower(op_); lop {
+		lop := strings.ToLower(op_)
+		lop = as.alias(lop, x, y)
+
+		switch lop {
 		case ".text":
 			as.sect = as.text
 			continue
@@ -218,6 +276,15 @@ func (as *x86) assemble(src []byte) {
 				as.emit(opADDQ, addr, 0x48, 0x83, as.poff(y.ival)+y.reg, as.xoff(y.ival), as.xoff(x.ival))
 			case aINT | aPTR<<8:
 				as.addrel(opADDQ, addr)
+			case aMEM | aREG<<8:
+				switch {
+				case x.reg != rSP:
+					as.emit(opLEAQ, addr, 0x48, 0x3, as.poff(x.ival)+x.reg+8*y.reg, as.xoff(x.ival))
+				case x.reg == rSP:
+					as.emit(opLEAQ, addr, 0x48, 0x3, as.poff(x.ival)+x.reg+8*y.reg, 0x24, as.xoff(x.ival))
+				default:
+					unk()
+				}
 			default:
 				unk()
 			}
@@ -244,10 +311,30 @@ func (as *x86) assemble(src []byte) {
 			}
 		case "cld":
 			as.emit(opCLD, addr, 0xfc)
+		case "cli":
+			as.emit(opCLI, addr, 0xfa)
 		case "cmpq":
 			switch x.typ | y.typ<<8 {
 			case aREG | aREG<<8:
 				as.emit(opCMPQ, addr, 0x48, 0x39, 0xc0+x.reg*8+y.reg)
+			case aINT | aREG<<8:
+				switch n := x.ival; {
+				case -128 <= n && n <= 127:
+					as.emit(opCMPQ, addr, 0x48, 0x83, 0xf8+y.reg, byte(n))
+				case y.reg == rAX:
+					as.emit(opCMPQ, addr, 0x48, 0x3d, uint32(n))
+				default:
+					as.emit(opCMPQ, addr, 0x48, 0x81, 0xf0+y.reg, uint32(n))
+				}
+			case aINT | aPTR<<8:
+				as.addrel(opCMPQ, addr)
+			case aINT | aMEM<<8:
+				switch {
+				case y.reg == rSP:
+					as.emit(opCMPQ, addr, 0x83, 0x7c, 0x24, as.poff(y.ival)+y.reg, as.xoff(y.ival), as.xoff(x.ival))
+				}
+			case aREG | aPTR<<8:
+				as.addrel(opCMPQ, addr)
 			default:
 				unk()
 			}
@@ -271,6 +358,8 @@ func (as *x86) assemble(src []byte) {
 			default:
 				unk()
 			}
+		case "hlt":
+			as.emit(opHLT, addr, 0xf4)
 		case "idivq":
 			switch x.typ | y.typ<<8 {
 			case aREG:
@@ -299,7 +388,7 @@ func (as *x86) assemble(src []byte) {
 		case "int":
 			switch x.typ | y.typ<<8 {
 			case aINT:
-				as.emit(opINT, addr, 0xcd, x.ival)
+				as.emit(opINT, addr, 0xcd, byte(x.ival))
 			default:
 				unk()
 			}
@@ -347,6 +436,15 @@ func (as *x86) assemble(src []byte) {
 			as.emit(opLODSL, addr, 0xad)
 		case "lodsq":
 			as.emit(opLODSQ, addr, 0x48, 0xad)
+		case "loop", "loope", "loopz", "loopne", "loopnz":
+			loops := map[string]op{
+				"loop":   opLOOP,
+				"loope":  opLOOPE,
+				"loopz":  opLOOPE,
+				"loopne": opLOOPNE,
+				"loopnz": opLOOPNE,
+			}
+			as.addrel(loops[lop], addr)
 		case "movb":
 			switch x.typ | y.typ<<8 {
 			case aREG | aMEM<<8:
@@ -395,6 +493,8 @@ func (as *x86) assemble(src []byte) {
 				switch {
 				case x.reg != rSP:
 					as.emit(opMOVQ, addr, 0x48, 0x89, as.poff(y.ival)+8*x.reg+y.reg, as.xoff(y.ival))
+				case x.reg == rSP:
+					as.emit(opMOVQ, addr, 0x48, 0x89, as.poff(y.ival)+8*x.reg+y.reg, 0x24, as.xoff(y.ival))
 				default:
 					unk()
 				}
@@ -408,6 +508,8 @@ func (as *x86) assemble(src []byte) {
 			default:
 				unk()
 			}
+		case "nop":
+			as.emit(opNOP, addr, 0x90)
 		case "notq":
 			switch x.typ {
 			case aREG:
@@ -467,6 +569,8 @@ func (as *x86) assemble(src []byte) {
 			default:
 				unk()
 			}
+		case "sti":
+			as.emit(opSTI, addr, 0xfb)
 		case "subq":
 			switch x.typ | y.typ<<8 {
 			case aREG | aREG<<8:
@@ -490,7 +594,12 @@ func (as *x86) assemble(src []byte) {
 		case "xorq":
 			switch x.typ | y.typ<<8 {
 			case aREG | aREG<<8:
-				as.emit(opXORQ, addr, 0x48, 0x31, 0xc0+x.reg*8+y.reg)
+				switch {
+				case x.reg == rR10 && y.reg == rR10:
+					as.emit(opXORQ, addr, 0x4d, 0x31, 0xd2)
+				default:
+					as.emit(opXORQ, addr, 0x48, 0x31, 0xc0+x.reg*8+y.reg)
+				}
 			default:
 				unk()
 			}
@@ -603,6 +712,19 @@ func (as *x86) relOp(p *relocation, o int64) (code []byte, reltyp int, relname s
 		default:
 			as.errorf("unknown call op %d", x.typ)
 		}
+
+	case opLOOP, opLOOPE, opLOOPNE:
+		if !(-128 <= o && o <= 127) {
+			as.errorf("loop offset too far")
+		}
+		loops := map[op]struct {
+			op byte
+		}{
+			opLOOP:   {0xe2},
+			opLOOPE:  {0xe1},
+			opLOOPNE: {0xe0},
+		}
+		code = []byte{loops[p.op].op, byte(o)}
 
 	case opADDQ:
 		code = []byte{0x48, 0x83, 0x4, 0x25, 0, 0, 0, 0}
@@ -835,6 +957,7 @@ func (as *x86) arg(s string) (a addr) {
 		p := strings.ToLower(s[1:])
 		r, ok := x86regs[p]
 		if ok {
+			a.ident = p
 			a.typ = aREG
 			a.reg = r.reg
 			if mem {

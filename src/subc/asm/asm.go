@@ -45,6 +45,8 @@ const (
 	opNOP op = iota
 	opSTRZ
 	opQUAD
+	opLONG
+	opSHORT
 	opBYTE
 	opBYTES
 )

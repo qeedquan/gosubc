@@ -14,10 +14,12 @@ const (
 	opADDQ op = iota + 100
 	opANDQ
 	opCALL
+	opCLD
 	opCMPQ
 	opCQO
 	opDECB
 	opDECQ
+	opDIVQ
 	opIDIVQ
 	opIMULQ
 	opINCB
@@ -36,6 +38,7 @@ const (
 	opJNZ
 	opJZ
 	opLEAQ
+	opLODSQ
 	opMOVB
 	opMOVQ
 	opNEGQ
@@ -49,6 +52,7 @@ const (
 	opSHLQ
 	opSHRQ
 	opSUBQ
+	opSYSCALL
 	opXCHGQ
 	opXORQ
 )
@@ -105,6 +109,21 @@ func x86as(prog *prog, name string, src []byte) {
 		},
 	}
 	as.assemble(src)
+}
+
+func (as *x86) bytes(op op, addr [2]addr, v interface{}) {
+	x, y := addr[0], addr[1]
+	switch x.typ | y.typ<<8 {
+	case aINT:
+		as.emit(op, addr, v)
+	case aPTR:
+		as.addrel(op, addr)
+	case aINT | aPTR<<8:
+		as.emit(op, addr, v)
+		as.addrel(op, addr)
+	default:
+		as.errorf("unknown argument")
+	}
 }
 
 func (as *x86) assemble(src []byte) {
@@ -172,19 +191,13 @@ func (as *x86) assemble(src []byte) {
 			as.addglobal(x.ident)
 			continue
 		case ".quad":
-			switch x.typ | y.typ<<8 {
-			case aINT:
-				as.emit(opQUAD, addr, uint64(x.ival))
-			case aPTR:
-				as.addrel(opQUAD, addr)
-			case aINT | aPTR<<8:
-				as.emit(opQUAD, addr, uint64(x.ival))
-				as.addrel(opQUAD, addr)
-			default:
-				unk()
-			}
+			as.bytes(opQUAD, addr, uint64(x.ival))
+		case ".long":
+			as.bytes(opLONG, addr, uint32(x.ival))
+		case ".short":
+			as.bytes(opSHORT, addr, uint16(x.ival))
 		case ".byte":
-			as.emit(opBYTE, addr, uint8(x.ival))
+			as.bytes(opBYTE, addr, uint8(x.ival))
 		case "addq":
 			switch x.typ | y.typ<<8 {
 			case aREG | aREG<<8:
@@ -226,6 +239,8 @@ func (as *x86) assemble(src []byte) {
 			default:
 				unk()
 			}
+		case "cld":
+			as.emit(opCLD, addr, 0xfc)
 		case "cmpq":
 			switch x.typ | y.typ<<8 {
 			case aREG | aREG<<8:
@@ -243,6 +258,13 @@ func (as *x86) assemble(src []byte) {
 				as.emit(opDECQ, addr, 0x48, 0xff, as.poff(x.ival)+8+x.reg, as.xoff(x.ival))
 			case aPTR:
 				as.addrel(opDECQ, addr)
+			default:
+				unk()
+			}
+		case "divq":
+			switch x.typ | y.typ<<8 {
+			case aREG:
+				as.emit(opDIVQ, addr, 0x48, 0xf7, 0xf0+x.reg)
 			default:
 				unk()
 			}
@@ -290,6 +312,8 @@ func (as *x86) assemble(src []byte) {
 			switch x.typ {
 			case aPTR:
 				as.addrel(branches[lop], addr)
+			case aREG:
+				as.emit(opJMP, addr, 0xff, 0xe0+x.reg)
 			default:
 				unk()
 			}
@@ -299,12 +323,16 @@ func (as *x86) assemble(src []byte) {
 				switch {
 				case x.reg != rSP:
 					as.emit(opLEAQ, addr, 0x48, 0x8d, as.poff(x.ival)+x.reg+8*y.reg, as.xoff(x.ival))
+				case x.reg == rSP:
+					as.emit(opLEAQ, addr, 0x48, 0x8d, as.poff(x.ival)+x.reg+8*y.reg, 0x24, as.xoff(x.ival))
 				default:
 					unk()
 				}
 			default:
 				unk()
 			}
+		case "lodsq":
+			as.emit(opLODSQ, addr, 0x48, 0xad)
 		case "movb":
 			switch x.typ | y.typ<<8 {
 			case aREG | aMEM<<8:
@@ -344,6 +372,8 @@ func (as *x86) assemble(src []byte) {
 				switch {
 				case x.reg != rSP:
 					as.emit(opMOVQ, addr, 0x48, 0x8b, as.poff(x.ival)+x.reg+8*y.reg, as.xoff(x.ival))
+				case x.reg == rSP:
+					as.emit(opMOVQ, addr, 0x48, 0x8b, as.poff(x.ival)+x.reg+8*y.reg, 0x24, as.xoff(x.ival))
 				default:
 					unk()
 				}
@@ -452,6 +482,8 @@ func (as *x86) assemble(src []byte) {
 			}
 		case "ret":
 			as.emit(opRET, addr, 0xc3)
+		case "syscall":
+			as.emit(opSYSCALL, addr, 0xf, 0x5)
 		default:
 			as.errorf("unknown instruction %s", lop)
 		}
@@ -593,6 +625,14 @@ func (as *x86) relOp(p *relocation, o int64) (code []byte, reltyp int, relname s
 		reltyp = lV
 		code = []byte{0, 0, 0, 0, 0, 0, 0, 0}
 
+	case opLONG:
+		reltyp = lV
+		code = []byte{0, 0, 0, 0}
+
+	case opSHORT:
+		reltyp = lV
+		code = []byte{0, 0}
+
 	case opBYTE:
 		reltyp = lV
 		code = []byte{0}
@@ -689,10 +729,12 @@ func (as *x86) fixupRelocs(s *section) {
 			}
 		}
 
-		p.rel = p.off
-		if p.op == opADDQ {
+		switch p.op {
+		case opADDQ:
 			p.rel = p.off + 4
-		} else if p.op != opQUAD {
+		case opQUAD, opLONG, opSHORT, opBYTE:
+			p.rel = p.off
+		default:
 			p.rel = p.off + int64(len(p.code)) - 4
 		}
 		i++

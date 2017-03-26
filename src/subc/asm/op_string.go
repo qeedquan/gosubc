@@ -6,19 +6,19 @@ import "fmt"
 
 const (
 	_op_name_0 = "opNOPopSTRZopQUADopLONGopSHORTopBYTEopBYTES"
-	_op_name_1 = "opADDQopANDQopCALLopCLDopCMPQopCQOopDECBopDECQopDIVQopIDIVQopIMULQopINCBopINCQopJAopJAEopJBopJBEopJEopJGopJGEopJLopJLEopJMPopJNEopJNZopJZopLEAQopLODSQopMOVBopMOVQopNEGQopNOTQopORQopPOPQopPUSHQopRETopSARQopSBBQopSHLQopSHRQopSUBQopSYSCALLopXCHGQopXORQ"
+	_op_name_1 = "opADDQopANDQopCALLopCLDopCMPQopCQOopDECBopDECQopDIVQopIDIVQopIMULQopINCBopINCQopINTopJAopJAEopJBopJBEopJEopJGopJGEopJLopJLEopJMPopJNEopJNZopJZopLEAQopLODSLopLODSQopMOVBopMOVQopNEGQopNOTQopORQopPOPQopPUSHQopRETopSARQopSBBQopSHLQopSHRQopSUBQopSYSCALLopXCHGQopXORQ"
 )
 
 var (
 	_op_index_0 = [...]uint8{0, 5, 11, 17, 23, 30, 36, 43}
-	_op_index_1 = [...]uint8{0, 6, 12, 18, 23, 29, 34, 40, 46, 52, 59, 66, 72, 78, 82, 87, 91, 96, 100, 104, 109, 113, 118, 123, 128, 133, 137, 143, 150, 156, 162, 168, 174, 179, 185, 192, 197, 203, 209, 215, 221, 227, 236, 243, 249}
+	_op_index_1 = [...]uint16{0, 6, 12, 18, 23, 29, 34, 40, 46, 52, 59, 66, 72, 78, 83, 87, 92, 96, 101, 105, 109, 114, 118, 123, 128, 133, 138, 142, 148, 155, 162, 168, 174, 180, 186, 191, 197, 204, 209, 215, 221, 227, 233, 239, 248, 255, 261}
 )
 
 func (i op) String() string {
 	switch {
 	case 0 <= i && i <= 6:
 		return _op_name_0[_op_index_0[i]:_op_index_0[i+1]]
-	case 100 <= i && i <= 143:
+	case 100 <= i && i <= 145:
 		i -= 100
 		return _op_name_1[_op_index_1[i]:_op_index_1[i+1]]
 	default:

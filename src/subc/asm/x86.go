@@ -24,6 +24,7 @@ const (
 	opIMULQ
 	opINCB
 	opINCQ
+	opINT
 	opJA
 	opJAE
 	opJB
@@ -38,6 +39,7 @@ const (
 	opJNZ
 	opJZ
 	opLEAQ
+	opLODSL
 	opLODSQ
 	opMOVB
 	opMOVQ
@@ -190,6 +192,7 @@ func (as *x86) assemble(src []byte) {
 		case ".globl":
 			as.addglobal(x.ident)
 			continue
+		case ".extern":
 		case ".quad":
 			as.bytes(opQUAD, addr, uint64(x.ival))
 		case ".long":
@@ -283,7 +286,7 @@ func (as *x86) assemble(src []byte) {
 				unk()
 			}
 		case "incq":
-			switch x.typ {
+			switch x.typ | y.typ<<8 {
 			case aREG:
 				as.emit(opINCQ, addr, 0x48, 0xff, 0xc0+x.reg)
 			case aMEM:
@@ -293,7 +296,14 @@ func (as *x86) assemble(src []byte) {
 			default:
 				unk()
 			}
-		case "jmp", "jne", "je", "jge", "jle", "jg", "jl", "jae", "jbe", "ja", "jb", "jz", "jnz":
+		case "int":
+			switch x.typ | y.typ<<8 {
+			case aINT:
+				as.emit(opINT, addr, 0xcd, x.ival)
+			default:
+				unk()
+			}
+		case "jmp", "jne", "je", "jge", "jle", "jg", "jl", "jae", "jbe", "ja", "jb", "jz", "jnz", "jc", "jnc":
 			branches := map[string]op{
 				"jmp": opJMP,
 				"jne": opJNE,
@@ -308,6 +318,8 @@ func (as *x86) assemble(src []byte) {
 				"jb":  opJB,
 				"jz":  opJZ,
 				"jnz": opJNZ,
+				"jnc": opJAE,
+				"jc":  opJB,
 			}
 			switch x.typ {
 			case aPTR:
@@ -331,6 +343,8 @@ func (as *x86) assemble(src []byte) {
 			default:
 				unk()
 			}
+		case "lodsl":
+			as.emit(opLODSL, addr, 0xad)
 		case "lodsq":
 			as.emit(opLODSQ, addr, 0x48, 0xad)
 		case "movb":

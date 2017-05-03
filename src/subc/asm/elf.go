@@ -127,7 +127,9 @@ func (c *gelf) gensymtab() *section {
 				shndx = 3
 				info |= uint8(elf.STT_OBJECT)
 			default:
-				errf("unknown section name %q", p.sect.name)
+				if shndx == 0 {
+					errf("unknown section name %q", p.sect.name)
+				}
 			}
 			if !p.allocated {
 				info |= uint8(elf.STT_OBJECT)
@@ -148,7 +150,7 @@ func (c *gelf) gensymtab() *section {
 		}))
 	}
 
-	s := newsection(".symtab")
+	s := newsection(".symtab", "", stSYMTAB)
 	s.bytes(b.Bytes())
 	return s
 }
@@ -158,7 +160,7 @@ func (c *gelf) gensymtab() *section {
 // the strings used in the ELF object.
 // It does not do string merging on the strings.
 func (c *gelf) genstrtab() *section {
-	s := newsection(".strtab")
+	s := newsection(".strtab", "", stSTRTAB)
 	s.strz("")
 	for _, p := range c.osyms {
 		s.strz(p.name)
@@ -170,7 +172,7 @@ func (c *gelf) genstrtab() *section {
 // .shstrtab section contains the strings
 // for the ELF header section names.
 func (c *gelf) genshstrtab() *section {
-	s := newsection(".shstrtab")
+	s := newsection(".shstrtab", "", stSTRTAB)
 	s.strz("")
 	s.strz(".text")
 	s.strz(".data")
@@ -441,6 +443,9 @@ func (c *gelf) writereloc(s *section) {
 		var addend int64
 
 		y := c.syms[p.relname]
+		if y == nil {
+			errf("internal error: invalid relname %q", p.relname)
+		}
 
 		switch y.typ {
 		case sBSS:

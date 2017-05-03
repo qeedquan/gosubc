@@ -47,6 +47,7 @@ const (
 	opLOOPE
 	opLOOPNE
 	opMOVB
+	opMOVL
 	opMOVQ
 	opNEGQ
 	opNOTQ
@@ -67,14 +68,14 @@ const (
 )
 
 const (
-	rAX  = 0
-	rCX  = 1
-	rDX  = 2
-	rBX  = 3
-	rSP  = 4
-	rBP  = 5
-	rSI  = 6
-	rDI  = 7
+	rRAX = 0
+	rRCX = 1
+	rRDX = 2
+	rRBX = 3
+	rRSP = 4
+	rRBP = 5
+	rRSI = 6
+	rRDI = 7
 	rR8  = 8
 	rR9  = 9
 	rR10 = 10
@@ -93,6 +94,15 @@ const (
 	rESI = 6
 	rEDI = 7
 
+	rAX = 0
+	rCX = 1
+	rDX = 2
+	rBX = 3
+	rSP = 4
+	rBP = 5
+	rSI = 6
+	rDI = 7
+
 	rAL = 0
 	rCL = 1
 	rDL = 2
@@ -106,14 +116,14 @@ const (
 var x86regs = map[string]struct {
 	reg byte
 }{
-	"rax": {rAX},
-	"rcx": {rCX},
-	"rdx": {rDX},
-	"rbx": {rBX},
-	"rsp": {rSP},
-	"rbp": {rBP},
-	"rsi": {rSI},
-	"rdi": {rDI},
+	"rax": {rRAX},
+	"rcx": {rRCX},
+	"rdx": {rRDX},
+	"rbx": {rRBX},
+	"rsp": {rRSP},
+	"rbp": {rRBP},
+	"rsi": {rRSI},
+	"rdi": {rRDI},
 	"r8":  {rR8},
 	"r9":  {rR9},
 	"r10": {rR10},
@@ -129,6 +139,13 @@ var x86regs = map[string]struct {
 	"ebp": {rEBP},
 	"esi": {rESI},
 	"edi": {rEDI},
+	"ax":  {rAX},
+	"cx":  {rCX},
+	"dx":  {rDX},
+	"sp":  {rSP},
+	"bp":  {rBP},
+	"si":  {rSI},
+	"di":  {rDI},
 	"al":  {rAL},
 	"cl":  {rCL},
 	"dl":  {rBL},
@@ -153,15 +170,39 @@ func x86as(prog *prog, name string, src []byte) {
 	as.assemble(src)
 }
 
-func (as *x86) bytes(op op, addr [2]addr, v interface{}) {
-	x, y := addr[0], addr[1]
-	switch x.typ | y.typ<<8 {
+func (as *x86) bytes(op op, addr [4]addr, size int) {
+	var v [4]interface{}
+	for i, a := range addr {
+		switch size {
+		case 1:
+			v[i] = uint8(a.ival)
+		case 2:
+			v[i] = uint16(a.ival)
+		case 4:
+			v[i] = uint32(a.ival)
+		case 8:
+			v[i] = uint64(a.ival)
+		default:
+			panic("unreachable")
+		}
+	}
+
+	switch addr[0].typ | addr[1].typ<<8 | addr[2].typ<<16 | addr[3].typ<<24 {
+	case aINT | aINT<<8 | aINT<<16 | aINT<<24:
+		as.emit(op, addr, v[3])
+		fallthrough
+	case aINT | aINT<<8 | aINT<<16:
+		as.emit(op, addr, v[2])
+		fallthrough
+	case aINT | aINT<<8:
+		as.emit(op, addr, v[1])
+		fallthrough
 	case aINT:
-		as.emit(op, addr, v)
+		as.emit(op, addr, v[0])
 	case aPTR:
 		as.addrel(op, addr)
 	case aINT | aPTR<<8:
-		as.emit(op, addr, v)
+		as.emit(op, addr, v[0])
 		as.addrel(op, addr)
 	default:
 		as.errorf("unknown argument")
@@ -170,7 +211,7 @@ func (as *x86) bytes(op op, addr [2]addr, v interface{}) {
 
 func (as *x86) alias(op string, x, y addr) string {
 	prefix := func(a addr) bool {
-		return a.typ == aREG && strings.HasPrefix(a.ident, "r")
+		return a.typ == aREG && strings.HasPrefix(a.sval, "r")
 	}
 	switch op {
 	case "mov":
@@ -192,6 +233,8 @@ func (as *x86) assemble(src []byte) {
 	s := bufio.NewScanner(b)
 
 	as.sect = as.text
+
+loop:
 	for as.lineno = 1; s.Scan(); as.lineno++ {
 		as.line = strings.TrimSpace(s.Text())
 		line := as.line
@@ -217,7 +260,7 @@ func (as *x86) assemble(src []byte) {
 		var op_ string
 		fmt.Sscan(line, &op_)
 
-		var addr [2]addr
+		var addr [4]addr
 		if len(line) > len(op_) {
 			line = strings.TrimSpace(line[len(op_)+1:])
 			args := strings.Split(line, ",")
@@ -230,35 +273,47 @@ func (as *x86) assemble(src []byte) {
 			}
 		}
 
-		x, y := addr[0], addr[1]
+		x, y, z := addr[0], addr[1], addr[2]
 		lop := strings.ToLower(op_)
 		lop = as.alias(lop, x, y)
 
 		switch lop {
+		case ".abort":
+			break loop
+		case ".section":
+			as.addsect(x.sval, y.sval, z.sval)
+			continue
 		case ".text":
 			as.sect = as.text
 			continue
 		case ".data":
 			as.sect = as.data
 			continue
+		case ".string":
+			as.sect.strz(x.sval)
+			continue
 		case ".lcomm":
-			as.addbss(x.ident, y.ival, true)
+			as.addbss(x.sval, y.ival, true)
 			continue
 		case ".comm":
-			as.addbss(x.ident, y.ival, false)
+			as.addbss(x.sval, y.ival, false)
 			continue
 		case ".globl":
-			as.addglobal(x.ident)
+			as.addglobal(x.sval)
 			continue
 		case ".extern":
 		case ".quad":
-			as.bytes(opQUAD, addr, uint64(x.ival))
+			as.bytes(opQUAD, addr, 8)
 		case ".long":
-			as.bytes(opLONG, addr, uint32(x.ival))
+			as.bytes(opLONG, addr, 4)
 		case ".short":
-			as.bytes(opSHORT, addr, uint16(x.ival))
+			as.bytes(opSHORT, addr, 2)
 		case ".byte":
-			as.bytes(opBYTE, addr, uint8(x.ival))
+			as.bytes(opBYTE, addr, 1)
+		case ".align":
+			as.alignpc(int(x.ival), uint8(y.ival))
+		case ".p2align":
+			as.alignpc(1<<uint(x.ival), uint8(y.ival))
 		case "addq":
 			switch x.typ | y.typ<<8 {
 			case aREG | aREG<<8:
@@ -267,7 +322,7 @@ func (as *x86) assemble(src []byte) {
 				switch n := x.ival; {
 				case -128 <= n && n <= 127:
 					as.emit(opADDQ, addr, 0x48, 0x83, 0xc0+y.reg, byte(n))
-				case y.reg == rAX:
+				case y.reg == rRAX:
 					as.emit(opADDQ, addr, 0x48, 0x05, uint32(n))
 				default:
 					as.emit(opADDQ, addr, 0x48, 0x81, 0xc0+y.reg, uint32(n))
@@ -278,13 +333,15 @@ func (as *x86) assemble(src []byte) {
 				as.addrel(opADDQ, addr)
 			case aMEM | aREG<<8:
 				switch {
-				case x.reg != rSP:
+				case x.reg != rRSP:
 					as.emit(opLEAQ, addr, 0x48, 0x3, as.poff(x.ival)+x.reg+8*y.reg, as.xoff(x.ival))
-				case x.reg == rSP:
+				case x.reg == rRSP:
 					as.emit(opLEAQ, addr, 0x48, 0x3, as.poff(x.ival)+x.reg+8*y.reg, 0x24, as.xoff(x.ival))
 				default:
 					unk()
 				}
+			case aREG | aPTR<<8:
+				as.addrel(opADDQ, addr)
 			default:
 				unk()
 			}
@@ -292,6 +349,15 @@ func (as *x86) assemble(src []byte) {
 			switch x.typ | y.typ<<8 {
 			case aREG | aREG<<8:
 				as.emit(opANDQ, addr, 0x48, 0x21, 0xc0+x.reg*8+y.reg)
+			case aREG | aMEM<<8:
+				switch {
+				case x.reg != rRSP:
+					as.emit(opANDQ, addr, 0x48, 0x21, as.poff(y.ival)+8*x.reg+y.reg, as.xoff(y.ival))
+				case x.reg == rRSP:
+					as.emit(opANDQ, addr, 0x48, 0x21, as.poff(y.ival)+8*x.reg+y.reg, 0x24, as.xoff(y.ival))
+				default:
+					unk()
+				}
 			default:
 				unk()
 			}
@@ -321,7 +387,7 @@ func (as *x86) assemble(src []byte) {
 				switch n := x.ival; {
 				case -128 <= n && n <= 127:
 					as.emit(opCMPQ, addr, 0x48, 0x83, 0xf8+y.reg, byte(n))
-				case y.reg == rAX:
+				case y.reg == rRAX:
 					as.emit(opCMPQ, addr, 0x48, 0x3d, uint32(n))
 				default:
 					as.emit(opCMPQ, addr, 0x48, 0x81, 0xf0+y.reg, uint32(n))
@@ -330,7 +396,7 @@ func (as *x86) assemble(src []byte) {
 				as.addrel(opCMPQ, addr)
 			case aINT | aMEM<<8:
 				switch {
-				case y.reg == rSP:
+				case y.reg == rRSP:
 					as.emit(opCMPQ, addr, 0x83, 0x7c, 0x24, as.poff(y.ival)+y.reg, as.xoff(y.ival), as.xoff(x.ival))
 				}
 			case aREG | aPTR<<8:
@@ -422,9 +488,9 @@ func (as *x86) assemble(src []byte) {
 			switch x.typ | y.typ<<8 {
 			case aMEM | aREG<<8:
 				switch {
-				case x.reg != rSP:
+				case x.reg != rRSP:
 					as.emit(opLEAQ, addr, 0x48, 0x8d, as.poff(x.ival)+x.reg+8*y.reg, as.xoff(x.ival))
-				case x.reg == rSP:
+				case x.reg == rRSP:
 					as.emit(opLEAQ, addr, 0x48, 0x8d, as.poff(x.ival)+x.reg+8*y.reg, 0x24, as.xoff(x.ival))
 				default:
 					unk()
@@ -453,8 +519,22 @@ func (as *x86) assemble(src []byte) {
 				as.addrel(opMOVB, addr)
 			case aMEM | aREG<<8:
 				switch {
-				case x.reg != rSP:
+				case x.reg != rRSP:
 					as.emit(opMOVB, addr, 0x8a, as.poff(x.ival)+x.reg+8*y.reg, as.xoff(x.ival))
+				default:
+					unk()
+				}
+			default:
+				unk()
+			}
+		case "movl":
+			switch x.typ | y.typ<<8 {
+			case aREG | aMEM<<8:
+				switch {
+				case x.reg != rRSP:
+					as.emit(opMOVL, addr, 0x89, as.poff(y.ival)+8*x.reg+y.reg, as.xoff(y.ival))
+				case x.reg == rRSP:
+					as.emit(opMOVL, addr, 0x89, as.poff(y.ival)+8*x.reg+y.reg, 0x24, as.xoff(y.ival))
 				default:
 					unk()
 				}
@@ -482,18 +562,18 @@ func (as *x86) assemble(src []byte) {
 				as.addrel(opMOVQ, addr)
 			case aMEM | aREG<<8:
 				switch {
-				case x.reg != rSP:
+				case x.reg != rRSP:
 					as.emit(opMOVQ, addr, 0x48, 0x8b, as.poff(x.ival)+x.reg+8*y.reg, as.xoff(x.ival))
-				case x.reg == rSP:
+				case x.reg == rRSP:
 					as.emit(opMOVQ, addr, 0x48, 0x8b, as.poff(x.ival)+x.reg+8*y.reg, 0x24, as.xoff(x.ival))
 				default:
 					unk()
 				}
 			case aREG | aMEM<<8:
 				switch {
-				case x.reg != rSP:
+				case x.reg != rRSP:
 					as.emit(opMOVQ, addr, 0x48, 0x89, as.poff(y.ival)+8*x.reg+y.reg, as.xoff(y.ival))
-				case x.reg == rSP:
+				case x.reg == rRSP:
 					as.emit(opMOVQ, addr, 0x48, 0x89, as.poff(y.ival)+8*x.reg+y.reg, 0x24, as.xoff(y.ival))
 				default:
 					unk()
@@ -577,6 +657,15 @@ func (as *x86) assemble(src []byte) {
 				as.emit(opSUBQ, addr, 0x48, 0x29, 0xc0+x.reg*8+y.reg)
 			case aINT | aMEM<<8:
 				as.emit(opSUBQ, addr, 0x48, 0x83, as.poff(y.ival)+0x28+y.reg, as.xoff(y.ival), as.xoff(x.ival))
+			case aINT | aREG<<8:
+				switch n := x.ival; {
+				case -128 <= n && n <= 127:
+					as.emit(opSUBQ, addr, 0x48, 0x83, 0xe8+y.reg, byte(n))
+				case y.reg == rRAX:
+					as.emit(opSUBQ, addr, 0x48, 0x2d, uint32(n))
+				default:
+					as.emit(opSUBQ, addr, 0x48, 0x81, 0xe0+y.reg, uint32(n))
+				}
 			default:
 				unk()
 			}
@@ -650,12 +739,12 @@ func (as *x86) xoff(n int64) interface{} {
 func (as *x86) relOp(p *relocation, o int64) (code []byte, reltyp int, relname string) {
 	x := p.addr[0]
 	y := p.addr[1]
-	l := as.fsym(x.ident)
+	l := as.fsym(x.typ, x.sval)
 
 	reltyp = lS
-	relname = x.ident
-	if relname == "" {
-		relname = y.ident
+	relname = x.sval
+	if (x.typ != aPTR && x.typ != aVAR) || relname == "" {
+		relname = y.sval
 	}
 	switch p.op {
 	case opJMP, opJNE, opJE, opJGE, opJLE, opJG, opJL, opJAE, opJBE, opJA, opJB, opJZ, opJNZ:
@@ -827,12 +916,12 @@ func (as *x86) fixupRelocs(s *section) {
 		for _, p := range s.relocs {
 			x := p.addr[0]
 			y := p.addr[1]
-			l := as.fsym(x.ident)
+			l := as.fsym(x.typ, x.sval)
 			if l == nil {
-				l = as.fsym(y.ident)
+				l = as.fsym(y.typ, y.sval)
 			}
 			if l == nil {
-				as.errorf("bad relocation data")
+				as.errorf("bad relocation data %d %d %q %d %q", x.typ, aPTR, x.sval, y.typ, y.sval)
 			}
 			p.code, p.reltyp, p.relname = as.relOp(p, l.off-p.off-int64(len(p.code)))
 			if p.isize != len(p.code) {
@@ -849,7 +938,7 @@ func (as *x86) fixupRelocs(s *section) {
 	for i := 0; i < len(s.relocs); {
 		p := s.relocs[i]
 		x := p.addr[0]
-		l := as.fsym(x.ident)
+		l := as.fsym(x.typ, x.sval)
 
 		switch p.op {
 		case opCALL:
@@ -904,11 +993,33 @@ func (as *x86) fixupBSS() {
 
 // arg decodes an argument.
 func (as *x86) arg(s string) (a addr) {
+	if strings.HasPrefix(s, ".") {
+		a.typ = aSECT
+		a.sval = s
+		return
+	}
+
+	if strings.HasPrefix(s, "\"") {
+		str, err := strconv.Unquote(s)
+		if err != nil {
+			as.errorf("invalid string arg")
+		}
+		a.typ = aSTR
+		a.sval = str
+		return
+	}
+
 	if strings.HasPrefix(s, "'") {
 		s = strings.Trim(s, "'")
 		r, _ := utf8.DecodeRuneInString(s)
 		a.typ = aINT
 		a.ival = int64(r)
+		return
+	}
+
+	if strings.HasPrefix(s, "@") {
+		a.typ = aNOTE
+		a.sval = s[1:]
 		return
 	}
 
@@ -920,7 +1031,7 @@ func (as *x86) arg(s string) (a addr) {
 
 	if isIdent(s) {
 		a.typ = aPTR
-		a.ident = s
+		a.sval = s
 		if !ptr {
 			a.typ = aVAR
 		}
@@ -957,7 +1068,7 @@ func (as *x86) arg(s string) (a addr) {
 		p := strings.ToLower(s[1:])
 		r, ok := x86regs[p]
 		if ok {
-			a.ident = p
+			a.sval = p
 			a.typ = aREG
 			a.reg = r.reg
 			if mem {

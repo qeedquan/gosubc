@@ -59,6 +59,9 @@ const (
 	aPTR
 	aMEM
 	aINT
+	aSTR
+	aNOTE
+	aSECT
 )
 
 // a variable type this will decide which section
@@ -76,6 +79,16 @@ const (
 	lS
 	lPC
 	lV
+)
+
+// section type
+const (
+	stNONE = iota
+	stNOTE
+	stPROGBITS
+	stNOBITS
+	stSYMTAB
+	stSTRTAB
 )
 
 // op represents an symbolic opcode.
@@ -109,20 +122,22 @@ type addr struct {
 	typ   int
 	reg   byte
 	ival  int64
-	ident string
+	sval  string
 	deref bool
 }
 
 // inst represents an instruction.
 type inst struct {
 	op   op
-	addr [2]addr
+	addr [4]addr
 	code []byte
 }
 
 // section represents one section.
 type section struct {
 	name       string
+	flags      string
+	typ        int
 	inst       []*inst
 	syms       []*sym
 	vars       []*sym
@@ -152,6 +167,7 @@ type prog struct {
 	text   *section
 	data   *section
 	bss    *section
+	sects  []*section
 	syms   map[string]*sym
 	osyms  []*sym
 	usyms  []*sym
@@ -178,16 +194,18 @@ func newprog(arch, os_ string) *prog {
 		os:     os_,
 		endian: binary.LittleEndian,
 		syms:   make(map[string]*sym),
-		text:   newsection(".text"),
-		data:   newsection(".data"),
-		bss:    newsection(".bss"),
+		text:   newsection(".text", "ax", stPROGBITS),
+		data:   newsection(".data", "wa", stPROGBITS),
+		bss:    newsection(".bss", "wa", stNOBITS),
 	}
 }
 
 // newsection creates a new section.
-func newsection(name string) *section {
+func newsection(name, flags string, typ int) *section {
 	return &section{
-		name: name,
+		name:  name,
+		flags: flags,
+		typ:   typ,
 	}
 }
 
@@ -231,7 +249,7 @@ func (as *as) code(v ...interface{}) []byte {
 }
 
 // emit emits code for an instruction.
-func (as *as) emit(op op, addr [2]addr, v ...interface{}) {
+func (as *as) emit(op op, addr [4]addr, v ...interface{}) {
 	code := as.code(v...)
 	s := as.sect
 	s.inst = append(s.inst, &inst{op: op, addr: addr, code: code})
@@ -261,8 +279,8 @@ func (as *as) gsym(name string, s *section) *sym {
 // fsym looks up a variable from the global symbol table.
 // If it does exist, it will add it to the undefined symbol
 // table for use by the linker.
-func (as *as) fsym(name string) *sym {
-	if name == "" {
+func (as *as) fsym(typ int, name string) *sym {
+	if (typ != aPTR && typ != aVAR) || name == "" {
 		return nil
 	}
 	s := as.syms[name]
@@ -325,13 +343,55 @@ fail:
 }
 
 // addrel adds a relocation.
-func (as *as) addrel(op op, addr [2]addr) {
+func (as *as) addrel(op op, addr [4]addr) {
 	s := as.sect
 	s.inst = append(s.inst, &inst{op: op, addr: addr})
 	i := s.inst[len(s.inst)-1]
 
 	as.relocs = append(as.relocs, &relocation{section: s, inst: i, off: s.size, pc: s.pc})
 	s.relocs = append(s.relocs, as.relocs[len(as.relocs)-1])
+}
+
+// addsect adds a section.
+func (as *as) addsect(name, flags, typ string) {
+	switch name {
+	case ".text", ".data", ".rela.text", ".rela.data",
+		".bss", ".shstrtab", ".strtab", ".symtab":
+		as.errorf("can't define a pre-defined section %q", name)
+	case "":
+		as.errorf("no section name specified")
+	}
+
+	var xtyp int
+	switch typ {
+	case "progbits":
+		xtyp = stPROGBITS
+	case "nobits":
+		xtyp = stNOBITS
+	case "note":
+		xtyp = stNOTE
+	default:
+		as.errorf("unknown section type %q", typ)
+	}
+
+	for _, s := range as.sects {
+		if s.name == name {
+			as.sect = s
+			return
+		}
+	}
+	as.sects = append(as.sects, newsection(name, flags, xtyp))
+	as.sect = as.sects[len(as.sects)-1]
+}
+
+// alignpc aligns current pc to value.
+func (as *as) alignpc(align int, value uint8) {
+	size := (align - (as.sect.pc % align)) % align
+	buf := make([]byte, size)
+	for i := range buf {
+		buf[i] = value
+	}
+	as.sect.bytes(buf)
 }
 
 // strz appends a nul-terminated string to the instruction stream.
